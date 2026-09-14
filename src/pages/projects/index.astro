@@ -1,0 +1,25 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const projects = [
+	{
+		title: 'Aether-ML',
+		description: 'A deep learning framework built from the ground up on NumPy and CuPy, with hand-written CUDA and ROCm kernels.',
+		href: '/projects/aether-ml',
+	},
+];
+---
+
+<Layout title="Projects — Alexander" description="Projects by Alexander.">
+	<section class="mx-auto max-w-2xl px-6 py-16">
+		<h1 class="text-3xl font-bold">Projects</h1>
+		<ul class="mt-8 space-y-8">
+			{projects.map((project) => (
+				<li>
+					<a href={project.href} class="text-xl font-semibold text-text hover:text-accent">{project.title}</a>
+					<p class="mt-1 text-text-muted">{project.description}</p>
+				</li>
+			))}
+		</ul>
+	</section>
+</Layout>
