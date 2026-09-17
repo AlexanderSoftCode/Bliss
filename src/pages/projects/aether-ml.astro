@@ -8,7 +8,7 @@ const features = [
 	},
 	{
 		name: 'Kernels',
-		detail: 'Hand-written CUDA and HIP kernels for every compute layer, magic-number integer division for on-device index decomposition, and numerical stability guards throughout.',
+		detail: 'Hand-written CUDA and HIP kernels for every layer and component except cheap elementwise ops like Dense and ReLU, with kernels JIT-compiled once per operation/shape and memoized after.'
 	},
 	{
 		name: 'Training',
@@ -16,7 +16,7 @@ const features = [
 	},
 	{
 		name: 'Serialization',
-		detail: '.aether bundles pairing a JSON architecture manifest with safetensors weights — no pickle anywhere in the load path, so an untrusted checkpoint cannot execute code.',
+		detail: '<code class="rounded border border-border bg-surface px-1.5 py-0.5 font-mono text-sm text-text">.aether</code> bundles pairing a JSON architecture manifest with <em class="text-text">safetensors</em> weights — no pickle anywhere in the load path, so an untrusted checkpoint cannot execute code.',
 	},
 	{
 		name: 'Preprocessing',
@@ -65,10 +65,13 @@ const badges = [
 		<p class="mt-3 text-text-muted">
 			Aether-ML implements forward/backward propagation, convolutional and fully connected networks,
 			normalization, pooling, and losses without building on top of any existing deep learning
-			library. The GPU path is hand-written CUDA and HIP kernels, not a wrapper over vectorized array
-			ops, with backend and kernel-variant selection resolved once at model construction. It's an
-			intentionally ground-up project — started knowing nothing about ML or GPU kernel programming —
-			built to understand how deep learning runtimes work under the hood.
+			library.
+		</p>
+		<p class="mt-3 text-text-muted">
+		    With <strong class="text-text"> CuPy</strong>, the GPU path leverages hand-written CUDA and
+			HIP kernels resolved once at model contruction. It's an intentionally ground-up project, as
+			I started with no background in ML or GPU kernel programming, and in the process, it helped me
+			understand how deep learning runtimes work under the hood.
 		</p>
 
 		<img
@@ -76,7 +79,7 @@ const badges = [
 			alt="Training convergence benchmark comparing NumPy CPU, legacy CuPy, vectorized CuPy, and fused-kernel CuPy backends, all converging to the same loss"
 			class="mt-8 w-full rounded-lg border border-border"
 		/>
-		<p class="mt-2 text-sm text-text-muted">
+		<p class="mt-3 text-sm text-text-muted">
 			All four backends converge to the same loss; the fused-kernel CuPy path is the one built for
 			speed.
 		</p>
@@ -86,7 +89,7 @@ const badges = [
 			{features.map((feature) => (
 				<div>
 					<dt class="font-medium text-text">{feature.name}</dt>
-					<dd class="mt-1 text-text-muted">{feature.detail}</dd>
+					<dd class="mt-1 text-text-muted" set:html={feature.detail} />
 				</div>
 			))}
 		</dl>
