@@ -12,11 +12,11 @@ const features = [
 	},
 	{
 		name: 'Training',
-		detail: 'AdamW with decoupled weight decay, L1/L2 regularization inside the optimizer kernel, label smoothing, batch shuffling, in-training validation, and mixed precision via set_precision.',
+		detail: 'AdamW with decoupled weight decay, automated mixed precision, label smoothing, batch shuffling, and in-training validation.',
 	},
 	{
 		name: 'Serialization',
-		detail: '<code class="rounded border border-border bg-surface px-1.5 py-0.5 font-mono text-sm text-text">.aether</code> bundles pairing a JSON architecture manifest with <em class="text-text">safetensors</em> weights — no pickle anywhere in the load path, so an untrusted checkpoint cannot execute code.',
+		detail: '<code class="rounded border border-border bg-surface px-1.5 py-0.5 font-mono text-sm text-text">.aether</code> bundles a JSON architecture manifest with <em class="text-text">safetensors</em> weights, meaning no pickle anywhere in the load path.',
 	},
 	{
 		name: 'Preprocessing',
@@ -68,8 +68,8 @@ const badges = [
 			library.
 		</p>
 		<p class="mt-3 text-text-muted">
-		    With <strong class="text-text"> CuPy</strong>, the GPU path leverages hand-written CUDA and
-			HIP kernels resolved once at model contruction. It's an intentionally ground-up project, as
+		    With <strong class="text-text">CuPy</strong>, the GPU path leverages hand-written CUDA and
+			HIP kernels resolved once at model construction. It's an intentionally ground-up project, as
 			I started with no background in ML or GPU kernel programming, and in the process, it helped me
 			understand how deep learning runtimes work under the hood.
 		</p>
