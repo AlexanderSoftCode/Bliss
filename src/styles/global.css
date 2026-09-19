@@ -5,7 +5,25 @@
 	--color-surface: #1c1a22;
 	--color-border: #322f3b;
 	--color-text: #e9e6ee;
-	--color-text-muted: #a7a2b3;
+	--color-text-muted: #b6b1c2;
 	--color-accent: #9b83d9;
 	--color-accent-hover: #b39ce8;
+}
+
+@utility glass {
+	backdrop-filter: blur(14px) saturate(120%);
+	background: color-mix(in oklab, var(--color-surface) 55%, transparent);
+	border: 1px solid color-mix(in oklab, white 15%, transparent);
+	box-shadow: inset 0 1px 0 color-mix(in oklab, white 20%, transparent);
+}
+
+/* Contribution graph ramp: level 0 (empty) through 4 (most active).
+   Derived from --color-accent, so changing the site accent updates all five.
+   Pin any level to a literal color by replacing that line. */
+:root {
+	--graph-0: var(--color-border);
+	--graph-1: color-mix(in oklab, var(--color-accent) 35%, var(--color-surface));
+	--graph-2: color-mix(in oklab, var(--color-accent) 55%, var(--color-surface));
+	--graph-3: color-mix(in oklab, var(--color-accent) 75%, var(--color-surface));
+	--graph-4: var(--color-accent);
 }
