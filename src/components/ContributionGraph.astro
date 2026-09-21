@@ -80,11 +80,8 @@ const formatCount = (count: number) =>
 ---
 
 <section class="graph glass relative rounded-lg p-6">
-	<p class="text-sm text-text-muted">Contributions</p>
-	<h2 class="mt-1 text-2xl font-semibold text-text">Github</h2>
-
-	<div class="mt-6 overflow-x-auto pb-1">
-		<div class="months text-xs text-text-muted">
+	<div class="overflow-x-auto pb-1">
+		<div class="months text-sm text-text-muted">
 			{months.map((month) => (
 				<span style={`grid-column-start: ${month.column}`}>{month.label}</span>
 			))}
@@ -106,7 +103,7 @@ const formatCount = (count: number) =>
 		</div>
 	</div>
 
-	<div class="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-text-muted">
+	<div class="mt-3 flex flex-wrap items-center justify-between gap-3 text-sm text-text-muted">
 		<p>
 			{calendar.totalContributions} contributions in the last year on{' '}
 			<a
