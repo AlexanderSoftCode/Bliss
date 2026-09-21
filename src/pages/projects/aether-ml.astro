@@ -1,6 +1,8 @@
 ---
+import { Image } from 'astro:assets';
 import Layout from '../../layouts/Layout.astro';
 import CopyInstall from '../../components/CopyInstall.astro';
+import convergence from '../../assets/benchmark_convergence-dark.png';
 const features = [
 	{
 		name: 'Layers',
@@ -56,8 +58,12 @@ const badges = [
 		</div>
 
 		<img
-			src="https://raw.githubusercontent.com/AlexanderSoftCode/Aether-ML/main/notebooks/assets/cifar10_demo.webp"
+			src="/cifar10_demo.webp"
 			alt="Aether-ML training demo on CIFAR-10"
+			width="1299"
+			height="649"
+			loading="lazy"
+			decoding="async"
 			class="mt-8 w-full rounded-lg border border-border"
 		/>
 
@@ -74,8 +80,8 @@ const badges = [
 			understand how deep learning runtimes work under the hood.
 		</p>
 
-		<img
-			src="https://raw.githubusercontent.com/AlexanderSoftCode/Aether-ML/main/notebooks/assets/benchmark_convergence-dark.png"
+		<Image
+			src={convergence}
 			alt="Training convergence benchmark comparing NumPy CPU, legacy CuPy, vectorized CuPy, and fused-kernel CuPy backends, all converging to the same loss"
 			class="mt-8 w-full rounded-lg border border-border"
 		/>
