@@ -1,0 +1,41 @@
+---
+import { tech, type TechKey } from '../data/tech';
+
+interface Props {
+	name: TechKey;
+	/* Set false for a monochrome glyph that inherits the label colour. Brand
+	   hexes are contrast-checked in tech.ts, so colour is safe by default. */
+	color?: boolean;
+	href?: string;
+}
+
+const { name, color = true, href } = Astro.props;
+const { name: label, icon } = tech[name];
+
+const Tag = href ? 'a' : 'span';
+const classes = [
+	'inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-2 py-0.5 align-middle text-sm text-text',
+	href && 'transition-colors hover:border-accent hover:text-accent',
+]
+	.filter(Boolean)
+	.join(' ');
+
+/* Logos with multiple paths carry their own inline fills, so monochrome has to
+   override them rather than just setting fill on the <svg>. */
+const iconClasses = ['h-4 w-4 shrink-0', !color && '[&_path]:fill-current'].filter(Boolean).join(' ');
+---
+
+<Tag class={classes} href={href}>
+	{
+		icon && (
+			<svg
+				class={iconClasses}
+				viewBox={icon.viewBox}
+				fill={color ? icon.hex : 'currentColor'}
+				aria-hidden="true"
+				set:html={icon.body}
+			/>
+		)
+	}
+	{label}
+</Tag>
