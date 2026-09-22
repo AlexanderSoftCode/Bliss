@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import ContributionGraph from '../components/ContributionGraph.astro';
 import ArrowIcon from '../components/ArrowIcon.astro';
+import TechPill from '../components/TechPill.astro';
 ---
 
 <Layout title="Alexander — Portfolio">
@@ -41,12 +42,13 @@ import ArrowIcon from '../components/ArrowIcon.astro';
 			</div>
 		</div>
 
-		<div class="mt-12 grid gap-6 sm:grid-cols-2">
+		<h2 class="mt-12 text-2xl font-semibold text-text">Featured Projects</h2>
+		<div class="mt-6 grid gap-6 sm:grid-cols-2">
 			<a
 				href="/projects/aether-ml"
 				class="group rounded-lg border border-border bg-surface p-6 transition-colors hover:border-accent"
 			>
-				<h2 class="text-2xl font-semibold text-text">Featured: Aether-ML</h2>
+				<h2 class="text-xl font-semibold text-text">Aether-ML</h2>
 				<p class="mt-2 text-text-muted">
 					A deep learning framework built from the ground up on NumPy and CuPy, with hand-written
 					CUDA and ROCm kernels.
@@ -56,6 +58,23 @@ import ArrowIcon from '../components/ArrowIcon.astro';
 					<ArrowIcon size="h-3.5 w-3.5" />
 				</span>
 			</a>
+		</div>
+
+		<div class="mt-12 max-w-3xl">
+			<h2 class="text-2xl font-semibold text-text">What I work with</h2>
+			<p class="mt-4 text-lg leading-8 text-text-muted">
+				Most of what I write is <TechPill name="python" />. I've also worked in
+				<TechPill name="java" />, <TechPill name="typescript" />, and
+				<TechPill name="javascript" />, dropping into <TechPill name="cpp"/> for GPU kernel and
+				compiler work.
+			</p>
+			<p class="mt-4 text-lg leading-8 text-text-muted">
+				My machine learning work sits on <TechPill name="numpy" /> and
+				<TechPill name="cupy" />, with <TechPill name="pytorch" />,
+				<TechPill name="tensorflow" />, and <TechPill name="pandas" /> alongside them. This site
+				is built with <TechPill name="astro" /> and <TechPill name="tailwind" />, and I reach for
+				<TechPill name="docker" /> and <TechPill name="githubActions" /> to package and ship things.
+			</p>
 		</div>
 
 		<div class="mt-12">
