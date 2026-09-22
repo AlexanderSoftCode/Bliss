@@ -18,5 +18,8 @@
   },
   "allowScripts": {
     "esbuild": true
+  },
+  "devDependencies": {
+    "simple-icons": "^16.32.0"
   }
 }
