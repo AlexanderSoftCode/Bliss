@@ -1,0 +1,72 @@
+---
+const numDots = 12;
+const numRings = 7;
+---
+<div class="dark-sphere" style={`--count: ${numDots}; --num-rings: ${numRings}`}>
+    {Array.from({ length: numRings }).map((_, row) =>
+      Array.from({ length: numDots }).map((_, index) =>
+      <div class="dots" style={`--i: ${index}; --j: ${row}`}></div>
+      )
+    )}
+</div>
+
+<style>
+    @property --spin {
+        syntax: '<angle>';
+        inherits: true;
+        initial-value: 0deg;
+    }
+    @keyframes spin {
+        from {
+            --spin: 0deg;
+        }
+        to {
+            --spin: 360deg;
+        }
+    }
+
+    .dark-sphere {
+        --sphere-size: 40px;
+        --sphere-radius: calc(var(--sphere-size) / 2);
+        --depth: 5;
+        /*
+        background: radial-gradient(at 25% 15%, #7F527F 10%, #3e3e5f 40%, #0A0C0D 80%); */
+        aspect-ratio: 1;                /* height follows width */
+        width: var(--sphere-size);
+        border-radius: 50%;
+        position: relative;
+        perspective: calc(var(--depth) * var(--sphere-radius));          /* always applies to the elements children */
+        transform-style: preserve-3d;
+        transform: rotateX(-15deg) rotateY(15deg);
+        margin: calc(var(--sphere-radius) / (var(--depth) - 1));
+        animation: spin 20s linear infinite;
+    }
+    /*  X runs left <--> right
+        Y runs up <--> down (positive is down
+        Z runs through the screen, positive goes towards the viewer.
+    */
+    @media (prefers-reduced-motion: reduce){
+        .dark-sphere {
+            animation: none;
+        }
+    }
+    .dots{
+        background-color: #DCD9CD;
+        aspect-ratio: 1;
+        width: 2px;
+        border-radius: 50%;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        --angle: calc(var(--i) * (360deg / var(--count)) + var(--spin));
+        --phi: calc(-90deg + (var(--j) + 1) * 180deg / (var(--num-rings) + 1));
+        --ring-radius: calc(var(--sphere-radius) * cos(var(--phi)));
+        --ring-height: calc(var(--sphere-radius) * sin(var(--phi)));
+        transform:
+            translate(-50%, -50%)
+            rotateY(calc(var(--angle)))
+            translateX(var(--ring-radius))
+            translateY(var(--ring-height))
+            rotateY(calc(-1 * (var(--angle))));
+    }
+</style>
