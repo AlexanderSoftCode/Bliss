@@ -1,13 +1,21 @@
 @import "tailwindcss";
 
 @theme {
-	--color-bg: oklch(18.3% 0.014 298);
-	--color-surface: oklch(22.4% 0.016 296.6);
+    --color-bg: oklch(18.3% 0.014 298);
+    --color-surface: oklch(22.4% 0.016 296.6);
 	--color-border: oklch(31.3% 0.022 296.6);
 	--color-text: oklch(93% 0.011 303.1);
 	--color-text-muted: oklch(77% 0.025 299.2);
 	--color-accent: oklch(66.7% 0.127 295.6);
 	--color-accent-hover: oklch(74.1% 0.11 297.6);
+	--font-heading: var(--font-commit-mono);
+}
+
+@layer base {
+    h1, h2, h3, h4, h5, h6 {
+        font-family: var(--font-heading);
+        font-weight: 700;
+    }
 }
 
 @media (color-gamut: p3) {

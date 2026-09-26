@@ -1,5 +1,5 @@
 // @ts-check
-import { defineConfig, envField } from 'astro/config';
+import { defineConfig, envField, fontProviders } from 'astro/config';
 
 import tailwindcss from '@tailwindcss/vite';
 
@@ -11,6 +11,19 @@ export default defineConfig({
       GITHUB_USERNAME: envField.string({ context: 'server', access: 'public' }),
     },
   },
+  fonts: [
+    {
+      provider: fontProviders.local(),
+      name: 'Commit Mono',
+      cssVariable: '--font-commit-mono',
+      fallbacks: ['ui-monospace', 'monospace'],
+      options: {
+        variants: [
+          { src: ['./src/assets/fonts/commit-mono/CommitMono-700-Regular.woff2'], weight: 700, style: 'normal' },
+        ],
+      },
+    },
+  ],
   vite: {
     plugins: [tailwindcss()]
   }

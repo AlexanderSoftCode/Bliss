@@ -2,7 +2,7 @@
 import '../styles/global.css';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
-
+import { Font } from 'astro:assets';
 interface Props {
 	title: string;
 	description?: string;
@@ -19,6 +19,7 @@ const { title, description = 'Portfolio of Alexander.' } = Astro.props;
 		<meta name="generator" content={Astro.generator} />
 		<meta name="description" content={description} />
 		<title>{title}</title>
+		<Font cssVariable="--font-commit-mono" preload={[{ weight: 700, style: 'normal' }]} />
 	</head>
 	<body class="flex min-h-screen flex-col bg-bg text-text">
 		<svg class="absolute h-0 w-0" aria-hidden="true">
