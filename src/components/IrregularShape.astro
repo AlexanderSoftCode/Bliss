@@ -1,0 +1,39 @@
+
+<div class="irregular-shape relative aspect-square w-full max-w-md">
+
+    <div class="shape-fallback h-full w-full rounded-full bg-surface"></div>
+    <canvas class="shape-canvas absolute inset-0 h-full w-full" hidden></canvas>
+</div>
+
+<script>
+  async function confirmGPUSupport() {
+    if (!navigator.gpu){
+      return null;
+    }
+    try{
+      const adapter = await navigator.gpu.requestAdapter();
+      if (!adapter){
+        return null;
+      }
+      const device= await adapter.requestDevice();
+      return device;
+    }
+    catch(error){
+      console.error(error);
+      return null;
+    }
+  }
+
+  async function init() {
+    const device = await confirmGPUSupport();
+    if (!device) return;
+
+    const canvas = document.querySelector<HTMLCanvasElement>('.shape-canvas'); //. prefix means class
+    const fallback = document.querySelector('.shape-fallback');
+    if (!canvas) return;
+
+    canvas.hidden = false;
+    fallback?.remove();
+  }
+  init();
+</script>
