@@ -1,39 +1,28 @@
+---
+// Sized and positioned by the page through `class`; the fallback and canvas fill whatever box it gets.
+const { class: className } = Astro.props;
+---
 
-<div class="irregular-shape relative aspect-square w-full max-w-md">
+<div class:list={['irregular-shape', className]}>
 
     <div class="shape-fallback h-full w-full rounded-full bg-surface"></div>
-    <canvas class="shape-canvas absolute inset-0 h-full w-full" hidden></canvas>
+    <canvas class="shape-canvas absolute inset-0 h-full w-full cursor-grab touch-none active:cursor-grabbing" hidden></canvas>
 </div>
 
 <script>
-  async function confirmGPUSupport() {
-    if (!navigator.gpu){
-      return null;
-    }
-    try{
-      const adapter = await navigator.gpu.requestAdapter();
-      if (!adapter){
-        return null;
-      }
-      const device= await adapter.requestDevice();
-      return device;
-    }
-    catch(error){
-      console.error(error);
-      return null;
-    }
-  }
+  import { mountShape } from "../lib/shape/mount.ts";
 
+  // mountShape checks for WebGPU itself and resolves null if it's missing.
   async function init() {
-    const device = await confirmGPUSupport();
-    if (!device) return;
-
     const canvas = document.querySelector<HTMLCanvasElement>('.shape-canvas'); //. prefix means class
     const fallback = document.querySelector('.shape-fallback');
     if (!canvas) return;
-
+    const stop = await mountShape(canvas);
+    if (!stop) return; // fallback stays
     canvas.hidden = false;
     fallback?.remove();
+    addEventListener('pagehide', stop, { once: true }); // release the GPU before Firefox freezes or unloads the page
   }
   init();
+  addEventListener('pageshow', (e) => { if (e.persisted) init(); }); // restored from the back/forward cache: the device is gone, remount
 </script>
