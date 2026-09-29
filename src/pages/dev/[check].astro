@@ -1,0 +1,119 @@
+---
+// Dev-only shader check: renders fixed frames offscreen, reads the pixels back, lists PASS/FAIL.
+// No paths in production builds, so this page never ships.
+import Layout from '../../layouts/Layout.astro';
+import IrregularShape from '../../components/IrregularShape.astro';
+
+export function getStaticPaths() {
+  return import.meta.env.DEV ? [{ params: { check: 'shape-check' } }] : [];
+}
+---
+
+<Layout title="Shape check">
+  <div class="mx-auto max-w-5xl px-6 py-16">
+    <h1 class="mb-8 text-4xl font-bold">Shape shader check</h1>
+    <ul class="shape-checks mb-12 font-mono"><li>running…</li></ul>
+    <IrregularShape />
+  </div>
+</Layout>
+
+<script>
+  import { parseGlb, type Mesh } from '../../lib/shape/glb.ts';
+  import { AMBIENT, LIGHT, PALETTE_LINEAR, createRenderer, requestDevice } from '../../lib/shape/renderer.ts';
+  import type { Quat } from '../../lib/shape/spin.ts';
+
+  const SIZE = 64;
+  const FORMAT = 'rgba8unorm';
+  const IDENTITY: Quat = [0, 0, 0, 1];
+  const FLIP_X: Quat = [1, 0, 0, 0]; // 180° about X: upside down
+  const FLIP_Y: Quat = [0, 1, 0, 0]; // 180° about Y: back to the viewer
+
+  /** A square facing the viewer, all at one height, so its colour is known exactly. */
+  const quad = (height: number): Mesh => ({
+    positions: new Float32Array([-0.5, -0.5, 0, 0.5, -0.5, 0, 0.5, 0.5, 0, -0.5, 0.5, 0]),
+    heights: new Float32Array(4).fill(height),
+    indices: new Uint16Array([0, 1, 2, 0, 2, 3]),
+  });
+
+  async function render(device: GPUDevice, mesh: Mesh, orientation: Quat) {
+    const renderer = createRenderer(device, FORMAT, mesh);
+    const usage = GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC;
+    const texture = device.createTexture({ size: [SIZE, SIZE], format: FORMAT, usage });
+    renderer.draw(texture, orientation);
+
+    const buffer = device.createBuffer({ size: SIZE * SIZE * 4, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
+    const encoder = device.createCommandEncoder();
+    encoder.copyTextureToBuffer({ texture }, { buffer, bytesPerRow: SIZE * 4 }, [SIZE, SIZE]);
+    device.queue.submit([encoder.finish()]);
+    await buffer.mapAsync(GPUMapMode.READ);
+    const pixels = new Uint8Array(buffer.getMappedRange().slice(0));
+    buffer.unmap();
+    const at = (x: number, y: number) => Array.from(pixels.subarray((y * SIZE + x) * 4, (y * SIZE + x) * 4 + 4));
+    return { pixels, at, renderer };
+  }
+
+  /** What the shader should output for a surface facing the viewer, as rgba bytes. */
+  function expectedFacing(rgb: number[]) {
+    const shade = AMBIENT + (1 - AMBIENT) * Math.max(LIGHT[2] / Math.hypot(...LIGHT), 0);
+    const srgb = (c: number) => (c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.055);
+    return [...rgb.map((c) => Math.round(srgb(c * shade) * 255)), 255];
+  }
+
+  /** Blue over red: the bottom of the palette is strongly blue, the top nearly neutral. Lighting barely moves it. */
+  function blueness(at: (x: number, y: number) => number[], fromTop: boolean) {
+    const x = SIZE / 2;
+    for (let i = 0; i < SIZE; i++) {
+      const y = fromTop ? i : SIZE - 1 - i;
+      if (at(x, y)[3] === 255) {
+        const [r, , b] = at(x, fromTop ? y + 2 : y - 2); // a little inside the silhouette edge
+        return b / (r + 1);
+      }
+    }
+    return NaN;
+  }
+
+  async function run() {
+    const device = await requestDevice();
+    if (!device) return [['WebGPU available', false]] as [string, boolean][];
+    const checks: [string, boolean][] = [];
+    const errors: string[] = [];
+    device.addEventListener('uncapturederror', (e) => errors.push((e as GPUUncapturedErrorEvent).error.message));
+
+    const middle = await render(device, quad(0), IDENTITY);
+    const info = await middle.renderer.module.getCompilationInfo();
+    checks.push(['WGSL compiles', !info.messages.some((m) => m.type === 'error')]);
+
+    // Heights -1, 0, 1 hit the bottom, middle and top palette stops exactly.
+    for (const [height, stop] of [[-1, 0], [0, 2], [1, 4]]) {
+      const { at } = height === 0 ? middle : await render(device, quad(height), IDENTITY);
+      const expected = expectedFacing(PALETTE_LINEAR[stop]);
+      const actual = at(SIZE / 2, SIZE / 2);
+      const ok = actual.every((c, i) => Math.abs(c - expected[i]) <= 2);
+      checks.push([`quad at height ${height}: palette[${stop}], lit from the front, sRGB (${actual} vs ${expected})`, ok]);
+    }
+
+    const back = await render(device, quad(0), FLIP_Y);
+    checks.push(['quad turned away is culled (orientation reaches the shader)', back.at(SIZE / 2, SIZE / 2)[3] === 0]);
+
+    const glb = parseGlb(await (await fetch('/models/shape.glb')).arrayBuffer());
+    const shape = await render(device, glb, IDENTITY);
+    checks.push(['shape: background is transparent', shape.at(0, 0)[3] === 0]);
+    checks.push(['shape: covers the centre', shape.at(SIZE / 2, SIZE / 2)[3] === 255]);
+    checks.push(['shape: bottom is bluer than top', blueness(shape.at, false) > blueness(shape.at, true)]);
+    const flipped = await render(device, glb, FLIP_X);
+    checks.push(['shape upside down: top is bluer than bottom', blueness(flipped.at, true) > blueness(flipped.at, false)]);
+    const again = await render(device, glb, IDENTITY);
+    checks.push(['shape: same frame twice is byte-identical', again.pixels.every((b, i) => b === shape.pixels[i])]);
+
+    await device.queue.onSubmittedWorkDone(); // validation errors arrive asynchronously
+    checks.push([`no WebGPU validation errors${errors.length ? `: ${errors.join('; ')}` : ''}`, errors.length === 0]);
+    return checks;
+  }
+
+  const list = document.querySelector('.shape-checks')!;
+  run().then((checks) => {
+    list.innerHTML = checks
+      .map(([name, ok]) => `<li class="${ok ? 'text-green-500' : 'text-red-500'}">${ok ? 'PASS' : 'FAIL'} ${name}</li>`)
+      .join('');
+  });
+</script>
