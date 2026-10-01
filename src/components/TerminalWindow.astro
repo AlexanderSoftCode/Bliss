@@ -3,22 +3,51 @@ import { Code } from 'astro:components';
 import type { ComponentProps} from 'astro/types';
 
 interface Props {
+  title: string;
   code: string;
   lang: ComponentProps<typeof Code>['lang'];
 }
 
-const { code, lang} = Astro.props;
+const { title, code, lang} = Astro.props;
 ---
 
-<div class="overflow-hidden rounded-md [&_pre]:px-2 [&_pre]:py-1">
-    <header class="grid grid-cols-[1fr_auto_1fr] items-center bg-[oklch(34%_0.025_298)] px-2">
+<div class="animate-lines verflow-hidden rounded-md [&_pre]:px-2 [&_pre]:py-1">
+    <header class="grid grid-cols-[1fr_auto_1fr] items-center gap-2 bg-[oklch(34%_0.025_298)] px-2">
         <div class="flex flex-row items-center gap-2">
             <div class="h-3 w-3 rounded-full bg-[#FF605C]"></div>
             <div class="h-3 w-3 rounded-full bg-[#FFBD44]"></div>
             <div class="h-3 w-3 rounded-full bg-[#00CA4E]"></div>
         </div>
-        <div>~/projects/model.py</div>
+        <div class="truncate">{title}</div>
         <div></div>
     </header>
     <Code code={code} lang={lang}></Code>
 </div>
+
+<style>
+
+  .animate-lines :global(.line){
+      animation: fade-in-line 400ms ease both;
+  }
+  .animate-lines :global(.line:nth-child(1)) { animation-delay: 300ms; }
+  .animate-lines :global(.line:nth-child(2)) { animation-delay: 420ms; }
+  .animate-lines :global(.line:nth-child(3)) { animation-delay: 540ms; }
+  .animate-lines :global(.line:nth-child(4)) { animation-delay: 660ms; }
+  .animate-lines :global(.line:nth-child(5)) { animation-delay: 780ms; }
+
+  @keyframes fade-in-line {
+      from {
+          opacity: 0;
+      }
+      to {
+          opacity: 1;
+      }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :global(.line) {
+      opacity: 1 !important;
+      transform: none !important;
+      animation: none !important;
+    }
+  }
+</style>
