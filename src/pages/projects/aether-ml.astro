@@ -3,7 +3,60 @@ import { Image } from 'astro:assets';
 import Layout from '../../layouts/Layout.astro';
 import CopyInstall from '../../components/CopyInstall.astro';
 import TechPill from '../../components/TechPill.astro';
+import TerminalWindow from '../../components/TerminalWindow.astro';
 import convergence from '../../assets/benchmark_convergence-dark.png';
+
+const codeSnippet = `import aether as ae
+
+# X_train, y_train, X_test, y_test: CIFAR-10 as CuPy arrays
+
+# --- Preprocessing ---
+feature_pipeline = ae.Compose([
+    ae.ToTensor(dtype='float32', target_device='cupy'),
+    ae.Rescale(factor=1.0 / 255.0),
+    ae.StandardScaler()
+])
+
+# --- Model: one conv block (32x32 -> 16x16), then a classification head ---
+model = ae.Model()
+model.manual_seed(seed=42)
+
+model.add(ae.Conv2d(3, 32, (3, 3), (1, 1), padding="same"))
+model.add(ae.BatchNorm(epsilon=1e-5, momentum=0.9))
+model.add(ae.ReLU())
+model.add(ae.Conv2d(32, 32, (3, 3), (1, 1), padding="same"))
+model.add(ae.BatchNorm(epsilon=1e-5, momentum=0.9))
+model.add(ae.ReLU())
+model.add(ae.MaxPool2d((2, 2), (2, 2), padding="valid"))
+model.add(ae.SpatialDropout(rate=0.1, seed=42))
+
+model.add(ae.GlobalAvgPool())
+model.add(ae.Dense(32, 10))
+
+# --- Configure, move to GPU, train ---
+model.configure(
+    loss=ae.SoftmaxCategoricalCrossEntropy(label_smoothing=0.05),
+    optimizer=ae.AdamW(lr=0.001, decay=1e-4, weight_decay=0.01),
+    accuracy=ae.CategoricalAccuracy(),
+    preprocessor=feature_pipeline
+)
+
+model.to("cupy")
+model.set_precision(compute_dtype="float16")
+model.finalize(input_shape=X_train.shape[1:])
+
+model.train(
+    X=X_train,
+    y=y_train,
+    epochs=4,
+    batch_size=256,
+    shuffle=True,
+    validation_data=(X_test, y_test)
+)
+
+model.save(filepath="saved_models/cifar10_cnn.aether")
+`
+
 const features = [
 	{
 		name: 'Layers',
@@ -77,7 +130,7 @@ const badges = [
 		</p>
 		<p class="mt-3 text-text-muted">
 		    With <strong class="text-text">CuPy</strong>, the GPU path leverages hand-written CUDA and
-			HIP kernels resolved once at model construction. It's an intentionally ground-up project, as
+			HIP kernels resolved once at per operation/shape and memoized after. It's an intentionally ground-up project, as
 			I started with no background in ML or GPU kernel programming, and in the process, it helped me
 			understand how deep learning runtimes work under the hood.
 		</p>
@@ -92,6 +145,11 @@ const badges = [
 			speed.
 		</p>
 
+		<h2 class="mt-12 text-xl font-semibold text-text">Example</h2>
+		    <details>
+				<summary>See a full training example</summary>
+				<TerminalWindow title="~/examples/cifar10.py" code={codeSnippet} lang="python"></TerminalWindow>
+			</details>
 		<h2 class="mt-12 text-xl font-semibold text-text">Key Features</h2>
 		<dl class="mt-4 space-y-6">
 			{features.map((feature) => (

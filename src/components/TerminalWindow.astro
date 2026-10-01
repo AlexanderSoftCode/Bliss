@@ -11,7 +11,7 @@ interface Props {
 const { title, code, lang} = Astro.props;
 ---
 
-<div class="animate-lines verflow-hidden rounded-md [&_pre]:px-2 [&_pre]:py-1">
+<div class="animate-lines verflow-hidden overflow-hidden rounded-lg [&_pre]:px-2 [&_pre]:py-1">
     <header class="grid grid-cols-[1fr_auto_1fr] items-center gap-2 bg-[oklch(34%_0.025_298)] px-2">
         <div class="flex flex-row items-center gap-2">
             <div class="h-3 w-3 rounded-full bg-[#FF605C]"></div>
@@ -34,7 +34,9 @@ const { title, code, lang} = Astro.props;
   .animate-lines :global(.line:nth-child(3)) { animation-delay: 540ms; }
   .animate-lines :global(.line:nth-child(4)) { animation-delay: 660ms; }
   .animate-lines :global(.line:nth-child(5)) { animation-delay: 780ms; }
-
+  .animate-lines :global(.line:nth-child(n+6)) {
+      animation-delay: 900ms;
+    }
   @keyframes fade-in-line {
       from {
           opacity: 0;
@@ -44,7 +46,7 @@ const { title, code, lang} = Astro.props;
       }
   }
   @media (prefers-reduced-motion: reduce) {
-    :global(.line) {
+    .animate-lines :global(.line) {
       opacity: 1 !important;
       transform: none !important;
       animation: none !important;
