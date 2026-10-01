@@ -10,7 +10,7 @@ const { size = 'h-4 w-4' } = Astro.props;
 <svg
 	class:list={[
 		size,
-		'origin-left translate-y-0.5 transition-transform group-hover:translate-x-1 group-hover:scale-x-[1.125]',
+		'origin-left translate-y-0.5 transition-transform motion-safe:group-hover:translate-x-1 motion-safe:group-hover:scale-x-[1.125] duration-300',
 	]}
 	viewBox="0 0 16 16"
 	fill="none"
