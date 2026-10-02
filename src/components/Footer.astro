@@ -16,7 +16,7 @@ try {
 
 <footer class="mx-auto w-full max-w-6xl px-6 pb-6">
 	<div class="flex items-center justify-between rounded-xl bg-surface px-6 py-5 text-base text-text-muted">
-		<p>&copy; {year} Alexander</p>
+		<p class="relative -top-0.5 whitespace-nowrap">&copy; {year} Alexander</p>
 		<div class="flex items-center gap-4">
 			{commit && (
 				<a
@@ -30,6 +30,9 @@ try {
 					</svg>
 					{commit.slice(0, 7)}
 				</a>
+			)}
+			{import.meta.env.PROD && (
+				<span class="hidden whitespace-nowrap font-mono text-sm sm:inline" title="This page's HTML, CSS, JS and fonts, Brotli-compressed">__PAGE_WEIGHT__</span>
 			)}
 			<CopyInstall command={CONTACT_EMAIL} look="light" />
 			<a href="https://github.com/AlexanderSoftCode" aria-label="GitHub" title="GitHub" class="hover:text-accent-hover">

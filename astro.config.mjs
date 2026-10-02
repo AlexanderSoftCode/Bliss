@@ -2,6 +2,7 @@
 import { defineConfig, envField, fontProviders } from 'astro/config';
 
 import tailwindcss from '@tailwindcss/vite';
+import pageWeight from './src/integrations/page-weight';
 
 // https://astro.build/config
 export default defineConfig({
@@ -12,6 +13,7 @@ export default defineConfig({
       CONTACT_EMAIL: envField.string({ context: 'server', access: 'secret'}),
     },
   },
+  integrations: [pageWeight()],
   fonts: [
     {
       provider: fontProviders.local(),
