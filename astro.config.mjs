@@ -6,6 +6,7 @@ import pageWeight from './src/integrations/page-weight';
 
 // https://astro.build/config
 export default defineConfig({
+  site: 'https://alexandertobias.dev',
   env: {
     schema: {
       GITHUB_TOKEN: envField.string({ context: 'server', access: 'secret' }),

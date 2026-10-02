@@ -4,5 +4,8 @@
   "assets": {
     "directory": "./dist",
     "not_found_handling": "404-page"
-  }
+  },
+  "routes": [
+    { "pattern": "alexandertobias.dev", "custom_domain": true}
+]
 }
