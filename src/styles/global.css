@@ -7,7 +7,7 @@
 	--color-text: oklch(93% 0.011 303.1);
 	--color-text-muted: oklch(77% 0.025 299.2);
 	--color-accent: oklch(66.7% 0.127 295.6);
-	--color-accent-hover: oklch(74.1% 0.11 297.6);
+	--color-accent-hover: oklch(from var(--color-accent) 80% calc(c * 0.87) calc(h + 2));
 	--font-heading: var(--font-commit-mono);
 }
 
@@ -21,7 +21,6 @@
 @media (color-gamut: p3) {
 	:root {
 		--color-accent: oklch(66.7% 0.155 295.6);
-		--color-accent-hover: oklch(74.1% 0.135 297.6);
 	}
 }
 
@@ -37,9 +36,9 @@
    Pin any level to a literal color by replacing that line. */
 :root {
 	--graph-0: var(--color-border);
-	--graph-1: color-mix(in oklab, var(--color-accent) 35%, var(--color-surface));
-	--graph-2: color-mix(in oklab, var(--color-accent) 55%, var(--color-surface));
-	--graph-3: color-mix(in oklab, var(--color-accent) 75%, var(--color-surface));
+	--graph-1: color-mix(in oklab, var(--color-accent) 50%, var(--color-surface));
+	--graph-2: color-mix(in oklab, var(--color-accent) 67%, var(--color-surface));
+	--graph-3: color-mix(in oklab, var(--color-accent) 83%, var(--color-surface));
 	--graph-4: var(--color-accent);
 }
    :root {

@@ -21,7 +21,7 @@ const label = isEmail ? 'Copy email address' : `Copy ${command} to clipboard`;
     <>
       <button
         type="button"
-        class="copy-btn group text-text-muted transition-colors hover:text-accent"
+        class="copy-btn group text-text-muted transition-colors hover:text-accent-hover"
         data-command={payload}
         data-encoded
         aria-label={label}
@@ -37,7 +37,7 @@ const label = isEmail ? 'Copy email address' : `Copy ${command} to clipboard`;
       <code>{command}</code>
       <button
         type="button"
-        class="copy-btn group shrink-0 rounded-md border border-border px-3 py-1 font-sans text-xs font-medium text-text-muted hover:border-accent hover:text-accent"
+        class="copy-btn group shrink-0 rounded-md border border-border px-3 py-1 font-sans text-xs font-medium text-text-muted hover:border-accent hover:text-accent-hover"
         data-command={payload}
         aria-label={label}
       >

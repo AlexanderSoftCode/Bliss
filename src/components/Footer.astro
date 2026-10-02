@@ -2,16 +2,37 @@
 import CopyInstall from "./CopyInstall.astro";
 import GithubIcon from "./GithubIcon.astro";
 import { CONTACT_EMAIL } from "astro:env/server";
+
+import { execSync } from "node:child_process";
 const year = new Date().getFullYear();
 
+// Resolved at build time, so it names the commit this build was made from. Hidden when git is
+// unavailable (e.g. a host that builds from a tarball without .git).
+let commit: string | undefined;
+try {
+	commit = execSync("git rev-parse HEAD", { encoding: "utf8" }).trim();
+} catch {}
 ---
 
 <footer class="mx-auto w-full max-w-6xl px-6 pb-6">
 	<div class="flex items-center justify-between rounded-xl bg-surface px-6 py-5 text-base text-text-muted">
 		<p>&copy; {year} Alexander</p>
 		<div class="flex items-center gap-4">
+			{commit && (
+				<a
+					href={`https://github.com/AlexanderSoftCode/Bliss/commit/${commit}`}
+					aria-label={`Latest commit ${commit.slice(0, 7)}`}
+					title="View latest commit"
+					class="flex items-center gap-1 font-mono text-sm transition-colors hover:text-accent-hover"
+				>
+					<svg class="h-4 w-4" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+						<path d="M11.93 8.5a4.002 4.002 0 0 1-7.86 0H.75a.75.75 0 0 1 0-1.5h3.32a4.002 4.002 0 0 1 7.86 0h3.32a.75.75 0 0 1 0 1.5Zm-1.43-.75a2.5 2.5 0 1 0-5 0 2.5 2.5 0 0 0 5 0Z" />
+					</svg>
+					{commit.slice(0, 7)}
+				</a>
+			)}
 			<CopyInstall command={CONTACT_EMAIL} look="light" />
-			<a href="https://github.com/AlexanderSoftCode" aria-label="GitHub" title="GitHub" class="hover:text-accent">
+			<a href="https://github.com/AlexanderSoftCode" aria-label="GitHub" title="GitHub" class="hover:text-accent-hover">
 				<GithubIcon />
 			</a>
 		</div>
