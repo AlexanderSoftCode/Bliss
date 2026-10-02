@@ -1,33 +1,76 @@
 ---
+import MailIcon from './MailIcon.astro';
+import CheckIcon from './CheckIcon.astro';
+
 interface Props {
 	command: string;
+	look?: 'boxed' | 'light';
 }
 
-const { command } = Astro.props;
+const { command, look = 'boxed' } = Astro.props;
+
+// The light look is the email button: its address never appears as plain text in the HTML, so
+// scrapers searching the page for "@" find nothing. The script decodes it when clicked.
+const isEmail = look === 'light';
+const payload = isEmail ? btoa(command) : command;
+const label = isEmail ? 'Copy email address' : `Copy ${command} to clipboard`;
 ---
 
-<div class="copy-install flex items-center justify-between gap-4 rounded-lg border border-border bg-surface px-4 py-3 font-mono text-sm text-text">
-	<code>{command}</code>
-	<button
-		type="button"
-		class="copy-btn shrink-0 rounded-md border border-border px-3 py-1 text-xs font-sans font-medium text-text-muted hover:border-accent hover:text-accent"
-		data-command={command}
-		aria-label={`Copy ${command} to clipboard`}
-	>
-		Copy
-	</button>
-</div>
+{
+  isEmail ? (
+    <>
+      <button
+        type="button"
+        class="copy-btn group text-text-muted transition-colors hover:text-accent"
+        data-command={payload}
+        data-encoded
+        aria-label={label}
+        title={label}
+      >
+        <span class="group-data-copied:hidden"><MailIcon /></span>
+        <span class="hidden group-data-copied:inline"><CheckIcon /></span>
+      </button>
+      <span class="copy-status sr-only" role="status"></span>
+    </>
+  ) : (
+    <div class="copy-install flex items-center justify-between gap-4 rounded-lg border border-border bg-surface px-4 py-3 font-mono text-sm text-text">
+      <code>{command}</code>
+      <button
+        type="button"
+        class="copy-btn group shrink-0 rounded-md border border-border px-3 py-1 font-sans text-xs font-medium text-text-muted hover:border-accent hover:text-accent"
+        data-command={payload}
+        aria-label={label}
+      >
+        <span class="group-data-copied:hidden">Copy</span>
+        <span class="hidden group-data-copied:inline">Copied!</span>
+      </button>
+      <span class="copy-status sr-only" role="status"></span>
+    </div>
+  )
+}
 
 <script>
-	document.querySelectorAll<HTMLButtonElement>('.copy-btn').forEach((button) => {
-		button.addEventListener('click', async () => {
-			const command = button.dataset.command ?? '';
-			await navigator.clipboard.writeText(command);
-			const original = button.textContent;
-			button.textContent = 'Copied!';
-			setTimeout(() => {
-				button.textContent = original;
-			}, 1500);
-		});
-	});
+  // Feedback is a data attribute the markup reacts to, so the script never rewrites
+  // the button's contents (which would delete an icon).
+  document.querySelectorAll<HTMLButtonElement>('.copy-btn').forEach((button) => {
+    const status = button.nextElementSibling?.matches('.copy-status') ? button.nextElementSibling : null;
+
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+    button.addEventListener('click', async () => {
+      clearTimeout(timeoutId);
+
+      const payload = button.dataset.command ?? '';
+      await navigator.clipboard.writeText(button.hasAttribute('data-encoded') ? atob(payload) : payload);
+
+      button.toggleAttribute('data-copied', true);
+      if (status) status.textContent = 'Copied to clipboard';
+
+      timeoutId = setTimeout(() => {
+        button.toggleAttribute('data-copied', false);
+        if (status) status.textContent = '';
+        timeoutId = undefined;
+      }, 1500);
+    });
+  });
 </script>

@@ -1,10 +1,19 @@
 ---
+import CopyInstall from "./CopyInstall.astro";
+import GithubIcon from "./GithubIcon.astro";
+import { CONTACT_EMAIL } from "astro:env/server";
 const year = new Date().getFullYear();
+
 ---
 
-<footer class="border-t border-border">
-	<div class="mx-auto flex max-w-2xl items-center justify-between px-6 py-6 text-sm text-text-muted">
+<footer class="mx-auto w-full max-w-6xl px-6 pb-6">
+	<div class="flex items-center justify-between rounded-xl bg-surface px-6 py-5 text-base text-text-muted">
 		<p>&copy; {year} Alexander</p>
-		<a href="https://github.com/AlexanderSoftCode" class="hover:text-accent">GitHub</a>
+		<div class="flex items-center gap-4">
+			<CopyInstall command={CONTACT_EMAIL} look="light" />
+			<a href="https://github.com/AlexanderSoftCode" aria-label="GitHub" title="GitHub" class="hover:text-accent">
+				<GithubIcon />
+			</a>
+		</div>
 	</div>
 </footer>
