@@ -9,6 +9,7 @@ export default defineConfig({
     schema: {
       GITHUB_TOKEN: envField.string({ context: 'server', access: 'secret' }),
       GITHUB_USERNAME: envField.string({ context: 'server', access: 'public' }),
+      CONTACT_EMAIL: envField.string({ context: 'server', access: 'secret'}),
     },
   },
   fonts: [
