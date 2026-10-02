@@ -1,6 +1,6 @@
 {
   "extends": "astro/tsconfigs/strict",
-  "compilerOptions": { "types": ["@webgpu/types"] },
+  "compilerOptions": { "types": ["@webgpu/types", "node"] },
   "include": [".astro/types.d.ts", "**/*"],
   "exclude": ["dist"]
 }

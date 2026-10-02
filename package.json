@@ -21,6 +21,7 @@
     "esbuild": true
   },
   "devDependencies": {
+    "@types/node": "^26.6.4",
     "@webgpu/types": "^0.1.74",
     "simple-icons": "^16.32.0"
   }
