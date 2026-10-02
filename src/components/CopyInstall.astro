@@ -4,14 +4,17 @@ import CheckIcon from './CheckIcon.astro';
 
 interface Props {
 	command: string;
-	look?: 'boxed' | 'light';
+	look?: 'boxed' | 'light' | 'text';
 }
 
 const { command, look = 'boxed' } = Astro.props;
 
-// The light look is the email button: its address never appears as plain text in the HTML, so
-// scrapers searching the page for "@" find nothing. The script decodes it when clicked.
-const isEmail = look === 'light';
+// The light and text looks are the email buttons: the address never appears as plain text in the
+// HTML, so scrapers searching the page for "@" find nothing. The script decodes it when clicked.
+// The text look adds a generic "contact[at]domain" label beside the icon, so the real name part
+// of the address stays hidden.
+const isEmail = look !== 'boxed';
+const isText = look === 'text';
 const payload = isEmail ? btoa(command) : command;
 const label = isEmail ? 'Copy email address' : `Copy ${command} to clipboard`;
 ---
@@ -21,7 +24,10 @@ const label = isEmail ? 'Copy email address' : `Copy ${command} to clipboard`;
     <>
       <button
         type="button"
-        class="copy-btn group text-text-muted transition-colors hover:text-accent-hover"
+        class:list={[
+          'copy-btn group text-text-muted transition-colors hover:text-accent-hover',
+          isText && 'inline-flex items-center gap-2',
+        ]}
         data-command={payload}
         data-encoded
         aria-label={label}
@@ -29,6 +35,12 @@ const label = isEmail ? 'Copy email address' : `Copy ${command} to clipboard`;
       >
         <span class="group-data-copied:hidden"><MailIcon /></span>
         <span class="hidden group-data-copied:inline"><CheckIcon /></span>
+        {isText && (
+          <>
+            <span class="group-data-copied:hidden">contact[at]{command.split('@')[1]}</span>
+            <span class="hidden group-data-copied:inline">Copied!</span>
+          </>
+        )}
       </button>
       <span class="copy-status sr-only" role="status"></span>
     </>
