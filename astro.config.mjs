@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig, envField, fontProviders } from 'astro/config';
 
+import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 import pageWeight from './src/integrations/page-weight';
 
@@ -14,7 +15,7 @@ export default defineConfig({
       CONTACT_EMAIL: envField.string({ context: 'server', access: 'secret'}),
     },
   },
-  integrations: [pageWeight()],
+  integrations: [pageWeight(), sitemap()],
   fonts: [
     {
       provider: fontProviders.local(),
