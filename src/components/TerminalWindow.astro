@@ -11,7 +11,7 @@ interface Props {
 const { title, code, lang} = Astro.props;
 ---
 
-<div class="animate-lines verflow-hidden overflow-hidden rounded-lg [&_pre]:px-2 [&_pre]:py-1">
+<div class="animate-lines overflow-hidden rounded-lg [&_pre]:px-2 [&_pre]:py-1">
     <header class="grid grid-cols-[1fr_auto_1fr] items-center gap-2 bg-[oklch(34%_0.025_298)] px-2">
         <div class="flex flex-row items-center gap-2">
             <div class="h-3 w-3 rounded-full bg-[#FF605C]"></div>
@@ -37,6 +37,12 @@ const { title, code, lang} = Astro.props;
   .animate-lines :global(.line:nth-child(n+6)) {
       animation-delay: 900ms;
     }
+  /* Hold the fade-in until the window scrolls into view; without JS it plays on load. */
+  @media (scripting: enabled) {
+    .animate-lines:not(.in-view) :global(.line) {
+      animation-play-state: paused;
+    }
+  }
   @keyframes fade-in-line {
       from {
           opacity: 0;
@@ -53,3 +59,17 @@ const { title, code, lang} = Astro.props;
     }
   }
 </style>
+
+<script>
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        entry.target.classList.add('in-view');
+        observer.unobserve(entry.target);
+      }
+    },
+    { rootMargin: '0px 0px -10% 0px' },
+  );
+  document.querySelectorAll('.animate-lines').forEach((el) => observer.observe(el));
+</script>

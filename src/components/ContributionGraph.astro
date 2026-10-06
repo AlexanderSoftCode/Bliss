@@ -206,6 +206,9 @@ const formatCount = (count: number) =>
 		const scroller = grid?.parentElement;
 		if (!grid || !tip || !scroller) return;
 
+		// Start at the most recent weeks when the grid overflows.
+		scroller.scrollLeft = scroller.scrollWidth;
+
 		grid.addEventListener('mouseover', (event) => {
 			const cell = (event.target as HTMLElement).closest<HTMLElement>('.day');
 			if (!cell) return;
