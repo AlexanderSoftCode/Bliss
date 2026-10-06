@@ -4,8 +4,15 @@ import { IDLE, createSpin, drag, step } from './spin.ts';
 
 const MAX_PIXEL_RATIO = 2;
 
-/** Start rendering the shape into the canvas. Resolves a stop function, or null if WebGPU or the model is unavailable. */
-export async function mountShape(canvas: HTMLCanvasElement, url = '/models/shape.glb'): Promise<(() => void) | null> {
+/**
+ * Start rendering the shape into the canvas. Resolves a stop function, or null if WebGPU or the model is unavailable.
+ * `onLost` is called if the browser drops the device after mounting, once rendering has stopped.
+ */
+export async function mountShape(
+  canvas: HTMLCanvasElement,
+  onLost: () => void,
+  url = '/models/shape.glb',
+): Promise<(() => void) | null> {
   try {
     const device = await requestDevice();
     const context = canvas.getContext('webgpu');
@@ -49,12 +56,13 @@ export async function mountShape(canvas: HTMLCanvasElement, url = '/models/shape
     // Only render while the canvas is on screen. Hidden tabs need nothing extra: browsers already stop rAF there.
     let last = 0;
     let frameId = 0; // 0 while paused
-    function frame(now: number) {
+    const frame = (now: number) => {
       step(spin, (now - last) / 1000, idle);
       last = now;
       renderer.draw(context.getCurrentTexture(), spin.orientation);
       frameId = requestAnimationFrame(frame);
-    }
+    };
+
     const visibility = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting && !frameId) {
         last = performance.now(); // so the first step isn't the whole time spent off screen
@@ -68,13 +76,19 @@ export async function mountShape(canvas: HTMLCanvasElement, url = '/models/shape
 
     // No device.destroy(): on pagehide it stalls every later frame in the tab in Firefox 155.
     // The browser frees the device with the page instead.
-    return () => {
+    const stop = () => {
       cancelAnimationFrame(frameId);
       resize.disconnect();
       visibility.disconnect();
       listeners.abort();
       context.unconfigure();
     };
+    // The browser can drop the device at any time (iOS does when its GPU process dies); nothing drawn to it shows up.
+    device.lost.then(() => {
+      stop();
+      onLost();
+    });
+    return stop;
   } catch (error) {
     console.error(error);
     return null;

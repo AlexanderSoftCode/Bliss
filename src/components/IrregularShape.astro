@@ -15,12 +15,15 @@ const { class: className } = Astro.props;
   // mountShape checks for WebGPU itself and resolves null if it's missing.
   async function init() {
     const canvas = document.querySelector<HTMLCanvasElement>('.shape-canvas'); //. prefix means class
-    const fallback = document.querySelector('.shape-fallback');
-    if (!canvas) return;
-    const stop = await mountShape(canvas);
+    const fallback = document.querySelector<HTMLElement>('.shape-fallback');
+    if (!canvas || !fallback) return;
+    const show = (mounted: boolean) => {
+      canvas.hidden = !mounted;
+      fallback.hidden = mounted;
+    };
+    const stop = await mountShape(canvas, () => show(false));
     if (!stop) return; // fallback stays
-    canvas.hidden = false;
-    fallback?.remove();
+    show(true);
     addEventListener('pagehide', stop, { once: true }); // release the GPU before Firefox freezes or unloads the page
   }
   init();
