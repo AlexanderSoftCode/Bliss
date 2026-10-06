@@ -1,8 +1,14 @@
 ---
+interface Props {
+    size?: string;
+    dotSize?: string;
+}
+
+const { size = '40px', dotSize = '2px' } = Astro.props;
 const numDots = 12;
 const numRings = 7;
 ---
-<div class="dark-sphere" style={`--count: ${numDots}; --num-rings: ${numRings}`}>
+<div class="dark-sphere" style={`--count: ${numDots}; --num-rings: ${numRings}; --sphere-size: ${size}; --dot-size: ${dotSize}`}>
     {Array.from({ length: numRings }).map((_, row) =>
       Array.from({ length: numDots }).map((_, index) =>
       <div class="dots" style={`--i: ${index}; --j: ${row}`}></div>
@@ -26,7 +32,6 @@ const numRings = 7;
     }
 
     .dark-sphere {
-        --sphere-size: 40px;
         --sphere-radius: calc(var(--sphere-size) / 2);
         --depth: 5;
         /*
@@ -53,7 +58,7 @@ const numRings = 7;
     .dots{
         background-color: #DCD9CD;
         aspect-ratio: 1;
-        width: 2px;
+        width: var(--dot-size);
         border-radius: 50%;
         position: absolute;
         top: 50%;

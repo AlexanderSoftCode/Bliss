@@ -1,0 +1,25 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ArrowIcon from '../components/ArrowIcon.astro';
+import OrbLogo from '../components/OrbLogo.astro';
+---
+
+<Layout title="Page not found — Alexander" description="This page doesn't exist.">
+	<section class="mx-auto flex max-w-3xl flex-col items-center px-6 py-24 text-center">
+		<div class="flex items-center gap-4 sm:gap-6">
+			<OrbLogo size="96px" dotSize="4px" />
+			<h1 class="text-7xl font-bold sm:text-8xl">404</h1>
+		</div>
+		<p class="mt-8 text-xl font-semibold">Page not found</p>
+		<p class="mt-2 text-text-muted">
+			There's nothing at this address. The link may be outdated or mistyped.
+		</p>
+		<a
+			href="/"
+			class="group mt-6 inline-flex items-center gap-2 text-text-muted transition-colors hover:text-accent-hover"
+		>
+			Back to home
+			<ArrowIcon />
+		</a>
+	</section>
+</Layout>
