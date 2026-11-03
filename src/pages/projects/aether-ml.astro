@@ -43,8 +43,7 @@ model.configure(
 
 model.to("cupy")
 model.set_precision(compute_dtype="float16")
-model.finalize(input_shape=X_train.shape[1:])
-
+model.finalize(input_shape=X_train.shape[1:], fuse_kernels=True)
 model.train(
     X=X_train,
     y=y_train,
@@ -60,23 +59,27 @@ model.save(filepath="saved_models/cifar10_cnn.aether")
 const features = [
 	{
 		name: 'Layers',
-		detail: 'Conv2d, Dense, BatchNorm, MaxPool2d, AvgPool2d, GlobalAvgPool, Dropout, SpatialDropout, ReLU, LeakyReLU, Softmax, with He initialization and Philox counter-based PRNG for dropout masks.',
+		detail: 'Conv2d, Dense, BatchNorm, MaxPool2d, AvgPool2d, GlobalAvgPool, Dropout, SpatialDropout, ReLU, LeakyReLU, SoftMax, with He initialization and Philox counter-based PRNG for dropout masks.',
 	},
 	{
 		name: 'Kernels',
-		detail: 'Hand-written CUDA and HIP kernels for every layer and component except cheap elementwise ops like Dense and ReLU, with kernels JIT-compiled once per operation/shape and memoized after.'
+		detail: 'Hand-written CUDA and HIP kernels for every layer and component except Dense, with kernels JIT-compiled once per operation/shape and memoized after.'
+	},
+	{
+	    name: 'Kernel Fusion',
+		detail: 'Automatic graph-level operator fusion on CuPy, fusing BatchNorm and ReLU/LeakyReLU on both forward and backward passes.',
 	},
 	{
 		name: 'Training',
 		detail: 'AdamW with decoupled weight decay, automated mixed precision, label smoothing, batch shuffling, and in-training validation.',
 	},
 	{
-		name: 'Serialization',
-		detail: '<code class="rounded border border-border bg-surface px-1.5 py-0.5 font-mono text-sm text-text">.aether</code> bundles a JSON architecture manifest with <em class="text-text">safetensors</em> weights, meaning no pickle anywhere in the load path.',
-	},
-	{
 		name: 'Preprocessing',
 		detail: 'Compose pipelines with Rescale, StandardScaler, and ToTensor.',
+	},
+	{
+		name: 'Serialization',
+		detail: '<code class="rounded border border-border bg-surface px-1.5 py-0.5 font-mono text-sm text-text">.aether</code> bundles a JSON architecture manifest with <em class="text-text">safetensors</em> weights (no pickle). The loader treats files as untrusted: only Aether\'s own classes resolve, and weights that don\'t match the manifest are rejected.',
 	},
 ];
 
@@ -147,7 +150,8 @@ const badges = [
 		/>
 		<p class="mt-3 text-sm text-text-muted">
 			All four backends converge to the same loss; the fused-kernel CuPy path is the one built for
-			speed.
+			speed for both GPU vendors. The RTX 3050 Laptops fused kernel path is around 4.6x slower than the 9070 XT's fused kernel path, but
+			still it manages to outpace the 9070 XT's path without custom kernels by over <strong class="text-text">9x</strong>.
 		</p>
 
 		<h2 class="mt-8 text-xl font-semibold text-text">Example</h2>
