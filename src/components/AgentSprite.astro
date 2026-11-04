@@ -1,0 +1,52 @@
+---
+interface Props {
+	size?: string;
+}
+
+const { size = 'h-5 w-5' } = Astro.props;
+---
+
+<!-- 16x16 pixel agent: round body, antenna with a status light, two eyes. -->
+<svg class:list={[size, 'agent']} viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true">
+	<g class="body">
+		<path class="light" d="M6 0h4v2h-4z" />
+		<path fill="currentColor" d="M7 2h2v2h-2zM5 4h6v1h1v1h1v6h-1v1h-1v1h-6v-1h-1v-1h-1v-6h1v-1h1z" />
+		<path class="eyes" d="M5 7h2v3h-2zM9 7h2v3h-2z" />
+	</g>
+</svg>
+
+<style>
+	.light {
+		fill: var(--color-accent);
+	}
+	.eyes {
+		fill: var(--color-bg);
+		transform-origin: 50% 8.5px;
+	}
+	.body {
+		transition: transform 300ms;
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		:global(.group:hover) .body {
+			transform: translateY(-1.5px);
+		}
+		:global(.group:hover) .eyes {
+			animation: blink 300ms 150ms;
+		}
+		:global(.group:hover) .light {
+			animation: pulse 900ms ease-in-out infinite;
+		}
+	}
+
+	@keyframes blink {
+		50% {
+			transform: scaleY(0.1);
+		}
+	}
+	@keyframes pulse {
+		50% {
+			fill: var(--color-accent-hover);
+		}
+	}
+</style>
