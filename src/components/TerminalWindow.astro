@@ -6,9 +6,10 @@ interface Props {
   title: string;
   code: string;
   lang: ComponentProps<typeof Code>['lang'];
+  wrap?: boolean;
 }
 
-const { title, code, lang} = Astro.props;
+const { title, code, lang, wrap = false } = Astro.props;
 ---
 
 <div class="animate-lines overflow-hidden rounded-lg [&_pre]:px-2 [&_pre]:py-1">
@@ -21,7 +22,7 @@ const { title, code, lang} = Astro.props;
         <div class="truncate">{title}</div>
         <div></div>
     </header>
-    <Code code={code} lang={lang}></Code>
+    <Code code={code} lang={lang} wrap={wrap}></Code>
 </div>
 
 <style>
@@ -71,5 +72,11 @@ const { title, code, lang} = Astro.props;
     },
     { rootMargin: '0px 0px -10% 0px' },
   );
-  document.querySelectorAll('.animate-lines').forEach((el) => observer.observe(el));
+
+  const observeAll = () => {
+    observer.disconnect();
+    document.querySelectorAll('.animate-lines:not(.in-view)').forEach((el) => observer.observe(el));
+  };
+  observeAll();
+  document.addEventListener('astro:page-load', observeAll);
 </script>
