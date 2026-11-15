@@ -3,13 +3,16 @@ import '../styles/global.css';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import { Font } from 'astro:assets';
+import { ClientRouter } from 'astro:transitions';
 interface Props {
 	title: string;
 	description?: string;
 	image?: string;
+	/** Client-side navigation between pages that opt in, so shared elements morph in every browser. */
+	clientRouter?: boolean;
 }
 
-const { title, description = 'Portfolio of Alexander.', image = '/og.png' } = Astro.props;
+const { title, description = 'Portfolio of Alexander.', image = '/og.png', clientRouter = false } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const imageUrl = new URL(image, Astro.site);
 ---
@@ -35,6 +38,7 @@ const imageUrl = new URL(image, Astro.site);
 		<meta name="twitter:description" content={description} />
 		<meta name="twitter:image" content={imageUrl} />
 		<title>{title}</title>
+		{clientRouter && <ClientRouter />}
 		<Font cssVariable="--font-commit-mono" preload={[{ weight: 700, style: 'normal' }]} />
 	</head>
 	<body class="flex min-h-screen flex-col bg-bg text-text">
