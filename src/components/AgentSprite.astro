@@ -1,17 +1,19 @@
 ---
 interface Props {
 	size?: string;
+	/** Eyes shut and a slow breathing bob, for work nobody has picked up yet. */
+	asleep?: boolean;
 }
 
-const { size = 'h-5 w-5' } = Astro.props;
+const { size = 'h-5 w-5', asleep = false } = Astro.props;
 ---
 
 <!-- 16x16 pixel agent: round body, antenna with a status light, two eyes. -->
-<svg class:list={[size, 'agent']} viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true">
+<svg class:list={[size, 'agent', asleep && 'asleep']} viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true">
 	<g class="body">
 		<path class="light" d="M6 0h4v2h-4z" />
 		<path fill="currentColor" d="M7 2h2v2h-2zM5 4h6v1h1v1h1v6h-1v1h-1v1h-6v-1h-1v-1h-1v-6h1v-1h1z" />
-		<path class="eyes" d="M5 7h2v3h-2zM9 7h2v3h-2z" />
+		<path class="eyes" d={asleep ? 'M5 9h2v1h-2zM9 9h2v1h-2z' : 'M5 7h2v3h-2zM9 7h2v3h-2z'} />
 	</g>
 </svg>
 
@@ -37,11 +39,24 @@ const { size = 'h-5 w-5' } = Astro.props;
 		:global(.group:hover) .light {
 			animation: pulse 900ms ease-in-out infinite;
 		}
+		.asleep .body {
+			animation: breathe 4.5s ease-in-out infinite;
+		}
+	}
+
+	/* Status light dimmed: nothing is running. */
+	.asleep .light {
+		fill: color-mix(in oklab, var(--color-accent) 45%, var(--color-surface));
 	}
 
 	@keyframes blink {
 		50% {
 			transform: scaleY(0.1);
+		}
+	}
+	@keyframes breathe {
+		50% {
+			transform: translateY(-0.5px);
 		}
 	}
 	@keyframes pulse {
