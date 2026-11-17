@@ -1,0 +1,86 @@
+---
+import DotNumber from './DotNumber.astro';
+
+interface Props {
+	from: string;
+	to: string;
+	unit: string;
+	fromLabel: string;
+	toLabel: string;
+	/** Trusted HTML, so captions can use <sup> and the prose markup. */
+	caption: string;
+}
+
+const { from, to, unit, fromLabel, toLabel, caption } = Astro.props;
+const label = `${from}${unit} (${fromLabel.toLowerCase()}) to ${to}${unit} (${toLabel.toLowerCase()})`;
+---
+
+<!-- A before/after number. The "to" side lights up row by row when it scrolls into view. -->
+<figure class="dot-stat my-8 rounded-xl border border-border bg-surface p-6 sm:p-7">
+	<div class="flex flex-wrap items-start gap-x-6 gap-y-4" role="img" aria-label={label}>
+		<div>
+			<div class="flex items-end gap-2">
+				<DotNumber value={from} class="h-16 w-auto" />
+				<span class="mono text-text-muted">{unit}</span>
+			</div>
+			<p class="mono mt-3 text-xs text-text-muted">{fromLabel}</p>
+		</div>
+		<span class="mono flex h-16 items-center text-text-muted" aria-hidden="true">→</span>
+		<div class="to">
+			<div class="flex items-end gap-2">
+				<DotNumber value={to} class="h-16 w-auto" />
+				<span class="mono text-accent-hover">{unit}</span>
+			</div>
+			<p class="mono mt-3 text-xs text-text-muted">{toLabel}</p>
+		</div>
+	</div>
+	<figcaption class="mt-6 text-sm leading-6 text-text-muted" set:html={caption} />
+</figure>
+
+<script>
+	const observer = new IntersectionObserver(
+		(entries) => {
+			for (const entry of entries) {
+				if (!entry.isIntersecting) continue;
+				entry.target.classList.add('in-view');
+				observer.unobserve(entry.target);
+			}
+		},
+		{ rootMargin: '0px 0px -15% 0px' },
+	);
+	// Run now for a full page load, and again after every client-side navigation.
+	const observeAll = () => {
+		observer.disconnect();
+		document.querySelectorAll('.dot-stat:not(.in-view)').forEach((el) => observer.observe(el));
+	};
+	observeAll();
+	document.addEventListener('astro:page-load', observeAll);
+</script>
+
+<style>
+	.mono {
+		font-family: var(--font-heading);
+		letter-spacing: 0.08em;
+	}
+
+	.to :global(.on) {
+		fill: var(--color-accent-hover);
+	}
+
+	/* Hold the "to" dots unlit until in view; without JS or with reduced motion they are simply lit. */
+	@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+		.dot-stat:not(.in-view) .to :global(.on) {
+			fill: var(--color-border);
+		}
+		.dot-stat.in-view .to :global(.on) {
+			transition: fill 250ms calc(180ms + var(--row) * 35ms);
+			animation: stat-pop 450ms cubic-bezier(0.2, 0.8, 0.2, 1) calc(180ms + var(--row) * 35ms);
+		}
+	}
+
+	@keyframes stat-pop {
+		40% {
+			transform: scale(1.45);
+		}
+	}
+</style>

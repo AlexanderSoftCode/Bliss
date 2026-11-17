@@ -1,0 +1,42 @@
+---
+interface Props {
+	value: string;
+	class?: string;
+}
+
+const { value, class: className } = Astro.props;
+
+const GLYPHS: Record<string, string[]> = {
+	'0': ['01110', '10001', '10011', '10101', '11001', '10001', '01110'],
+	'1': ['00100', '01100', '00100', '00100', '00100', '00100', '01110'],
+	'2': ['01110', '10001', '00001', '00010', '00100', '01000', '11111'],
+	'3': ['11111', '00010', '00100', '00010', '00001', '10001', '01110'],
+	'4': ['00010', '00110', '01010', '10010', '11111', '00010', '00010'],
+	'5': ['11111', '10000', '11110', '00001', '00001', '10001', '01110'],
+	'6': ['00110', '01000', '10000', '11110', '10001', '10001', '01110'],
+	'7': ['11111', '00001', '00010', '00100', '01000', '01000', '01000'],
+	'8': ['01110', '10001', '10001', '01110', '10001', '10001', '01110'],
+	'9': ['01110', '10001', '10001', '01111', '00001', '00010', '01100'],
+};
+
+const dots = [...value].flatMap((digit, i) =>
+	GLYPHS[digit].flatMap((row, y) =>
+		[...row].map((bit, x) => ({ cx: i * 6 + x + 0.5, cy: y + 0.5, row: y, on: bit === '1' })),
+	),
+);
+---
+
+<svg class:list={['dot-number', className]} viewBox={`0 0 ${value.length * 6 - 1} 7`} role="img" aria-label={value}>
+	{dots.map((dot) => <circle class:list={{ on: dot.on }} cx={dot.cx} cy={dot.cy} r="0.36" style={`--row: ${dot.row}`} />)}
+</svg>
+
+<style>
+	circle {
+		fill: var(--color-border);
+		transform-box: fill-box;
+		transform-origin: center;
+	}
+	.on {
+		fill: var(--color-text);
+	}
+</style>

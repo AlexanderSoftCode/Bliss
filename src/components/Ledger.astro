@@ -1,0 +1,39 @@
+---
+import AgentSprite from './AgentSprite.astro';
+
+interface Props {
+	handOff: string[];
+	keep: string[];
+}
+
+const { handOff, keep } = Astro.props;
+---
+
+<!-- Every post's signature panel: what the agent gets, and what stays with me. -->
+<div class="my-8 grid divide-y divide-border rounded-xl border border-border bg-surface sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+	<div class="p-6 sm:p-7">
+		<h3 class="mono flex items-center gap-2 text-xs text-text-muted">
+			<span class="flex h-4 w-4 items-center justify-center"><AgentSprite size="h-4 w-4" /></span>
+			HANDED OFF
+		</h3>
+		<ul class="mt-4 divide-y divide-border text-base leading-6 text-text-muted">
+			{handOff.map((item) => <li class="py-2">{item}</li>)}
+		</ul>
+	</div>
+	<div class="p-6 sm:p-7">
+		<h3 class="mono flex items-center gap-2 text-xs text-text-muted">
+			<span class="flex h-4 w-4 items-center justify-center text-accent" aria-hidden="true">&gt;</span>
+			KEPT
+		</h3>
+		<ul class="mt-4 divide-y divide-border text-base leading-6 text-text-muted">
+			{keep.map((item) => <li class="py-2">{item}</li>)}
+		</ul>
+	</div>
+</div>
+
+<style>
+	.mono {
+		font-family: var(--font-heading);
+		letter-spacing: 0.08em;
+	}
+</style>

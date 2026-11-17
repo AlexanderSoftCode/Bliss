@@ -1,0 +1,24 @@
+---
+interface Props {
+	/** Section number, e.g. "01". */
+	n: string;
+	title: string;
+	id?: string;
+}
+
+const { n, title } = Astro.props;
+const id = Astro.props.id ?? title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+---
+
+<!-- Spacing above only: the gap below comes from the paragraph's own mt-4, a third of this one. -->
+<div class="mt-12">
+	<p class="eyebrow text-xs text-accent" aria-hidden="true">{n} /</p>
+	<h2 id={id} class="mt-2 scroll-mt-8 text-2xl text-text">{title}</h2>
+</div>
+
+<style>
+	.eyebrow {
+		font-family: var(--font-heading);
+		letter-spacing: 0.08em;
+	}
+</style>
