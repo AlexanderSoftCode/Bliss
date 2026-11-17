@@ -1,0 +1,223 @@
+---
+import PostLayout from '../../layouts/PostLayout.astro';
+import DotStat from '../../components/DotStat.astro';
+import Ledger from '../../components/Ledger.astro';
+import PostSection from '../../components/PostSection.astro';
+import TerminalWindow from '../../components/TerminalWindow.astro';
+import MarkdownFile from '../../components/MarkdownFile.astro';
+import * as claudeMd from '../../data/aether-ml-claude.md';
+
+const runTests = `.claude/dx python3 -m unittest discover -q tests`;
+
+const repoLayout = `$ ls aether/layers
+activations.py  dropout.py  normalization.py
+conv.py         linear.py   pooling.py
+
+$ ls aether/custom_kernels
+adam_kernel.py       dropout_kernel.py  pooling_kernel.py
+batchnorm_kernel.py  launch_math.py     relu_kernel.py
+conv_kernel          loss_kernel.py`;
+
+const handOff = [
+	'Exploring the codebase and debating tradeoffs before any code exists',
+	'Implementing against the plan we agreed on',
+	'Running the full suite in the GPU container',
+	'Benchmark scripts and before/after numbers',
+	'Re-running the same evals on CUDA and filling in the PR numbers',
+	"PR descriptions, written to the repo's template",
+	'Investigations, written up as a note for a fresh session',
+];
+
+const keep = [
+    'Auditing the diff before I commit',
+    'Moving each PR onto my RTX 3050 laptop, and merging when both machines agree',
+    'Deciding what tradeoffs are worth keeping',
+	'The plan, and even what choices we may not have agreed upon'
+];
+
+const code = 'rounded border border-border bg-surface px-1.5 py-0.5 font-mono text-sm text-text';
+---
+
+<PostLayout slug="aether-ml">
+	<p>
+		<a
+			href="/projects/aether-ml"
+			class="font-semibold text-accent underline hover:text-accent-hover"
+			>Aether-ML</a> exists so I can understand deep learning runtimes under the hood;
+		letting an agent abstract everything defeats the point. An agent and I plan out each task,
+		and I own the core architectural decisions to keep my mental map of the codebase intact.
+	</p>
+
+	<PostSection n="01" title="The decisions are mine" />
+	<p>
+		For a non-trivial task, I start with the most capable model as a planner. I keep my own thoughts
+		and ideas to myself or share just enough context so the model explores its own approach first.
+		Smarter models often find cleaner paths than mine, and I don't want to anchor them to a suboptimal design.
+	</p>
+	<p>
+		Because the repo is laid out with a predictable directory structure, <code class={code}>layers/</code>
+		mapped cleanly to <code class={code}>custom_kernels/</code>, and the harness hides build
+		artifacts, saved weights, and datasets by default, it navigates straight to the relevant source
+		files and writes throwaway scripts to answer its own open questions before drafting a plan.
+	</p>
+	<div class="my-8">
+		<TerminalWindow title="~/projects/Aether-ML" code={repoLayout} lang="console" />
+	</div>
+	<p>
+		Once the draft is ready, that's where I push back hard: we go back and forth until I understand
+		why there's no silver bullet, pick the best tradeoff, tell the model which compromise we're
+		taking, and have it lay out the drawbacks before locking the architecture down. When the plan
+		is settled, cheaper sub-agents implement the task, escalating back to the planner only when
+		they hit a roadblock.
+	</p>
+	<p>
+		The rule I hold hardest is that no agent improvises once we've agreed on a plan. If
+		implementation hits a constraint the plan didn't expect, or forces a new tradeoff, the work
+		stops and comes back to me. A decision settled quietly inside a diff is one I never got to make.
+	</p>
+	<p>
+		One time, we had agreed a plan for <a
+			href="https://github.com/AlexanderSoftCode/Aether-ML/blob/main/benchmarks/compare.py"
+			class="font-semibold text-accent underline hover:text-accent-hover"
+			>a tool that compares two benchmark runs</a> and flags slowdowns. Each run times
+		the training step three times, and the plan's rule flagged a change only if it was bigger than
+		how far those repeats spread apart in both runs combined. To test it, the agent slowed ReLU's
+		backward pass on purpose, and the rule failed in both directions.
+	</p>
+	<p>
+		One repeat in every run came in about 0.8 ms slower than the other two. That single outlier
+		made the spread wider than the real slowdown, so a 0.78 ms (7.5%) regression went unflagged.
+		Where the repeats happened to land close together, the opposite happened: two runs of identical
+		code got flagged for a few microseconds.
+	</p>
+	<p>
+	    The agent stopped, and told me the digest. Its recommendation was to throw away one extra
+		repeat after the warm-up and place a threshold at 2% (or 0.01 ms here). I accepted the
+		tradeoff and kept it to three repeats per run, as the tool was built for iterating, and not
+		precision.
+	</p>
+	<MarkdownFile
+		title="/CLAUDE.md"
+		file={claudeMd}
+		linkBase="https://github.com/AlexanderSoftCode/Aether-ML/blob/main/"
+		note="snapshot · Nov 2026"
+	>
+		This is the desktop's file. The laptop has its own copy with the same rules but no
+		devcontainer: there the agent and I share a plain virtual environment.
+	</MarkdownFile>
+
+	<PostSection n="02" title="Few tests, each one sharp" />
+	<p>
+	    When left to their devices, agents <strong class="text-text">love</strong> writing a lot of tests.
+		For all tasks, the verification harness catches the broad correctness from end-to-end training runs
+		highlighted in section 06. For code getting refactored, such as a kernel rewrite for the BatchNorm layer,
+		regression tests are used to catch granular errors. Expected values compared to the reference implementation,
+		or tolerances never getting loosened to make a green test suite.
+	</p>
+	<p>
+		On the dropout kernel rewrite, that meant tests named for the bug each one catches: the
+		Philox generator checked against the published Random123 vectors, nothing written past the
+		end of the buffer, the keep threshold at the extreme rates, and a dropped NaN coming out as
+		exactly zero.
+	</p>
+
+	<PostSection n="03" title="The agent runs where I run" />
+	<p>
+		Aether's CuPy paths need a real GPU, and on my desktop that means <strong class="text-text">ROCm</strong> inside a
+		devcontainer. A session-start hook brings that container up when a session opens. A small
+		wrapper, <code class={code}>.claude/dx</code>, finds it by its devcontainer label, because the container's name
+		changes on every rebuild, and runs commands as the same user my editor does.
+	</p>
+	<p>
+		The result is the agent and I share the same machine, and "passes for the agent" means the same thing as
+		"passes for me". The whole suite takes about seven seconds, so the rule is to run all of it,
+		every time.
+	</p>
+	<div class="my-8">
+		<TerminalWindow title="~/projects/Aether-ML" code={runTests} lang="bash" />
+	</div>
+
+	<PostSection n="04" title="What I hand off, what I keep" />
+	<Ledger handOff={handOff} keep={keep} />
+	<p>
+		The agent doesn't get to automatically file or merge PRs. Everything stays in the working tree until I've read
+		them with <code class={code}>git diff</code>, and I often edit them first, usually finding DRY violations, and
+	    clean it up myself. Then they go on a branch and through a PR, so CI sees them before <code class={code}>main</code> does.
+	</p>
+	<p>
+		After CI checks I don't auto-merge the code as I still need to verify parity on both GPU vendors. My desktop has
+		an <strong class="text-text">RX 9070 XT</strong> and my laptop has an <strong class="text-text">RTX 3050</strong>.
+		The agent once proposed reworking the convolution kernel to do more math per loop iteration, and on the 9070 XT it cleanly
+		beat the previous iteration of the dweight and dinput kernels. Due to the nature of the benchmark, the 9070 XT's 64 MB of cache
+		can hold the whole layer's input, so cache hits were a given. The 3050 has about 2 MB, and the cache misses make the reads go to VRAM.
+	</p>
+	<p>
+	    Any change must pass on both machines. For kernel changes, both must retain the same relative benefits.
+		This does mean I don't write kernels coupled to an architecture, but writing kernel code in this manner is out of scope
+		for this project.
+	</p>
+
+	<PostSection n="05" title="One bug, start to finish" />
+	<p>
+		The clearest case for working this way was a silent bug, and it surfaced in a plan review. An
+		earlier session had drafted a plan for mixed precision, and I asked a fresh one what it thought.
+		One line of the plan said gradients stay fp32, so no loss scaling is needed. The agent checked
+		that line against real training batches and it was already false.
+	</p>
+	<p>
+		<code class={code}>Conv2d</code>'s backward pass casts incoming gradients to fp16 for the tensor-core kernels, and
+		fp16 rounds anything below roughly 3e-8 to zero. At the worst layer, the median gradient was
+		smaller than that. Nothing crashed and nothing warned.
+	</p>
+	<p>
+		The agent expected it to matter more at larger
+		image sizes, where the gradient reaching each pixel should be smaller, and said plainly that it
+		hadn't tested that. So I had it measure the problem before anyone fixed it: three seeds, 25
+		epochs, and the share of gradient values lost at each layer. The results went into a handoff
+		note, not a patch.
+	</p>
+	<DotStat
+		from="53"
+		to="72"
+		unit="%"
+		fromLabel="64PX · BEFORE"
+		toLabel="64PX · SCALED"
+		caption="Mean test accuracy over three seeds, 53.17% to 72.46%, with gradients scaled by 2<sup>10</sup> before the cast. Measured on upscaled CIFAR-10 on an RX 9070 XT."
+	/>
+	<p>At 32px, the size I normally train at, there was no measurable difference between the two.</p>
+	<p>
+		By then the thread was long and my own picture of it was getting weak. When that happens I
+		start a fresh session and carry over only the facts that matter, which is what the note was for.
+	</p>
+	<p>
+		The note also recorded what I had ruled out. Clipping was out because the problem is
+		underflow, and clipping only limits large values. An adaptive scale was out because it has to
+		find the largest gradient on every step, and that is an extra pass in the hot path that nobody
+		had measured. Given the context, the new thread planned a fix after reading the note, and it <a
+			href="https://github.com/AlexanderSoftCode/Aether-ML/pull/23"
+			class="font-semibold text-accent underline hover:text-accent-hover">merged</a> as a fixed scale with a
+		regression test.
+	</p>
+
+	<PostSection n="06" title="Done means checked" />
+	<p>
+		A change isn't finished when the agent says it is, or even when the PR opens. First the full
+		suite, e2e training runs, and pipeline speed benchmarks have to pass in my desktop's
+		ROCm container.
+	</p>
+	<p>
+		Fewer tests only works if the few are enough, so every new test has to be proven against
+		deliberate faults. On the dropout rewrite, that meant breaking the kernel nine different ways, with faults like overlapping thread slices
+		and a missing bounds guard, and confirming each break was caught by at least one test.
+	</p>
+	<p>
+		CUDA paths like <code class={code}>cuda_fp16.h</code> can't compile on my AMD desktop, so the PR goes up with those
+		checks explicitly marked unverified. I then pull the branch onto my RTX 3050 laptop, have the
+		agent run the same evals on CUDA, and update the PR description with the real numbers. It
+		merges only after both GPUs pass.
+	</p>
+	<p>
+		None of these rules make the agent faster. They make its output checkable, and on a project
+		whose whole point is that I understand it, that is the only kind of speed I can use.
+	</p>
+</PostLayout>
