@@ -1,0 +1,41 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import AgentSprite from '../../components/AgentSprite.astro';
+import PostCard from '../../components/PostCard.astro';
+import { posts } from '../../data/posts';
+
+const shipped = posts.filter((post) => post.status === 'published').length;
+const queued = posts.length - shipped;
+---
+
+<Layout clientRouter title="How I use agents — Alexander" description="How I work with coding agents, one write-up per project.">
+	<section class="mx-auto max-w-5xl px-6 py-16">
+		<h1 class="text-3xl font-bold">How I use agents</h1>
+		<p class="mt-4 max-w-2xl text-lg text-text-muted">
+    		I lean on agents heavily for my workflows, and I change how much I rely on them from project to
+            task to diff. What I won't hand off is understanding: I know the primitives, and I retain an
+            working mental model of the code I ship. Each write-up covers a project, how much I leave
+            to the agents, and why.
+		</p>
+		<p class="queue group mt-6 inline-flex items-center gap-2 text-xs text-text-muted">
+			<AgentSprite size="h-4 w-4" />
+			<span>{shipped} SHIPPED · {queued} IN THE QUEUE</span>
+		</p>
+
+		<div class="mt-16 grid justify-items-center gap-x-12 gap-y-16 md:grid-cols-2 md:justify-items-start md:pr-8">
+			{posts.map((post, index) => <PostCard slug={post.slug} index={index} />)}
+		</div>
+
+		<p class="mt-6 max-w-2xl text-lg text-text-muted">
+            I am constantly iterating on my workflows, so these posts will stay as a window into how I
+            shipped with agents at that time.
+		</p>
+	</section>
+</Layout>
+
+<style>
+	.queue {
+		font-family: var(--font-heading);
+		letter-spacing: 0.08em;
+	}
+</style>

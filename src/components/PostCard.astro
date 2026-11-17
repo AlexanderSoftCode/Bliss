@@ -1,0 +1,196 @@
+---
+import AgentSprite from './AgentSprite.astro';
+import DotNumber from './DotNumber.astro';
+import PostFrame from './PostFrame.astro';
+import { formatDate, getPost, transitionNames } from '../data/posts';
+
+interface Props {
+	slug: string;
+	/** Position in the grid, for the staggered entrance. */
+	index?: number;
+}
+
+const { slug, index = 0 } = Astro.props;
+const { post, number } = getPost(slug);
+const names = transitionNames(post.slug);
+const queued = post.status === 'queued';
+const Root = queued ? 'div' : 'a';
+---
+
+<!--
+	Concept: the card is a task, the agent picks it up.
+	Hover: the agent peeks over the top, and the numeral lights up row by row.
+	Click morphs the card into the post.
+	A queued card is a task nobody has picked up: dashed, unlit, the agent asleep on top.
+-->
+<Root
+	href={queued ? undefined : `/blog/${post.slug}`}
+	class:list={['stack', queued ? 'queued' : 'group']}
+	data-tilt={queued ? undefined : ''}
+	data-enter
+	style={`--i: ${index}`}
+>
+	<div class="agent" aria-hidden="true">
+		<AgentSprite size="h-9 w-9" asleep={queued} />
+	</div>
+
+	<article class="card">
+		{queued ? <div class="frame-dashed" aria-hidden="true" /> : <PostFrame slug={post.slug} />}
+		<p class="mono border-b border-border pb-3 text-xs text-text-muted">WRITING N°{number}</p>
+
+		<!-- The numeral takes whatever height is left, so a longer title or summary shrinks it instead of overflowing the 3:4 card. -->
+		<div class="flex min-h-0 flex-1 items-center justify-end pt-6 pb-5" style={queued ? undefined : `view-transition-name: ${names.number}`}>
+			<DotNumber value={number} class="h-full max-h-16 min-h-12 w-auto md:max-h-24" />
+		</div>
+
+		<h2 class="border-t border-border pt-4 text-xl text-text">
+			{post.title}
+		</h2>
+		<p class="mt-2 text-sm text-text-muted">{post.summary}</p>
+
+		<div class="mono mt-auto flex items-center justify-between gap-3 pt-6 text-xs text-text-muted">
+			<span class="rounded-full border border-border px-2.5 py-1">{post.tag}</span>
+			<span class="flex items-center gap-2 whitespace-nowrap">
+				{queued || !post.date ? <span>QUEUED</span> : <time datetime={post.date.toISOString()}>{formatDate(post.date)}</time>}
+				{!queued && post.minutes ? <span>· {post.minutes} MIN</span> : null}
+			</span>
+		</div>
+	</article>
+</Root>
+
+<script>
+	import '../lib/card-entrance';
+	import '../lib/morph-guard';
+
+	// Tilt toward the pointer. Pointer devices only, motion-safe.
+	const canTilt = matchMedia('(hover: hover) and (prefers-reduced-motion: no-preference)');
+
+	// Runs on every client-side navigation, not just the first page load.
+	document.addEventListener('astro:page-load', () => {
+		for (const stack of document.querySelectorAll<HTMLElement>('[data-tilt]')) {
+			stack.addEventListener('pointermove', (event) => {
+				if (!canTilt.matches) return;
+				const rect = stack.getBoundingClientRect();
+				const x = (event.clientX - rect.left) / rect.width;
+				const y = (event.clientY - rect.top) / rect.height;
+				stack.style.setProperty('--ry', `${(x - 0.5) * 10}deg`);
+				stack.style.setProperty('--rx', `${(0.5 - y) * 8}deg`);
+			});
+			stack.addEventListener('pointerleave', () => {
+				for (const prop of ['--rx', '--ry']) stack.style.removeProperty(prop);
+			});
+		}
+	});
+</script>
+
+<style>
+	.stack {
+		--rx: 0deg;
+		--ry: 0deg;
+		--ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+		position: relative;
+		display: block;
+		width: 100%;
+		max-width: 22rem;
+		outline: none;
+	}
+
+	.mono {
+		font-family: var(--font-heading);
+		letter-spacing: 0.08em;
+	}
+
+	.card {
+		position: relative;
+		z-index: 2;
+		display: flex;
+		flex-direction: column;
+		aspect-ratio: 3 / 4;
+		padding: 1.75rem;
+		border-radius: 0.75rem;
+		background: var(--color-surface);
+	}
+
+	/* The agent waits behind the card, hidden by its top edge. */
+	.agent {
+		position: absolute;
+		top: 0;
+		right: 2.5rem;
+		z-index: 1;
+		color: var(--color-text-muted);
+		transform: translateY(20%);
+		transition:
+			transform 500ms var(--ease),
+			color 300ms;
+	}
+
+	a.stack:is(:hover, :focus-visible) :global(.post-frame) {
+		border-color: var(--color-accent);
+	}
+	a.stack:focus-visible .card {
+		outline: 2px solid var(--color-accent-hover);
+		outline-offset: 4px;
+	}
+	a.stack:is(:hover, :focus-visible) .agent {
+		color: var(--color-accent-hover);
+	}
+	a.stack:is(:hover, :focus-visible) :global(.dot-number .on) {
+		fill: var(--color-accent-hover);
+	}
+	:global(.dot-number .on) {
+		transition: fill 250ms calc(180ms + var(--row) * 35ms);
+	}
+
+	/* Queued: nobody has picked it up, so nothing lights up and the agent sleeps on the top edge. */
+	.frame-dashed {
+		position: absolute;
+		inset: 0;
+		border: 1px dashed var(--color-border);
+		border-radius: inherit;
+		pointer-events: none;
+	}
+	.queued .agent {
+		z-index: 3;
+		/* The body ends 2px above the sprite's bottom edge: rest it exactly on the card. */
+		transform: translateY(-87.5%);
+	}
+	.queued :global(.dot-number .on) {
+		fill: var(--color-text-muted);
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.stack[data-enter] {
+			animation: enter 600ms var(--ease) calc(var(--i) * 80ms) backwards;
+		}
+		a.stack {
+			transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry));
+			/* Rasterize the stack as one layer, so Firefox doesn't draw seams at the rounded corners while tilted. */
+			will-change: transform;
+			transition: transform 400ms var(--ease);
+		}
+		a.stack:is(:hover, :focus-visible) {
+			transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry)) translateY(-6px);
+			transition-duration: 120ms;
+		}
+		a.stack:is(:hover, :focus-visible) .agent {
+			transform: translateY(-78%);
+			transition-delay: 120ms;
+		}
+		a.stack:is(:hover, :focus-visible) :global(.dot-number .on) {
+			animation: pop 450ms var(--ease) calc(180ms + var(--row) * 35ms);
+		}
+	}
+
+	/* `translate`, not `transform`, so it composes with the tilt instead of overriding it. */
+	@keyframes enter {
+		from {
+			opacity: 0;
+			translate: 0 12px;
+		}
+	}
+	@keyframes pop {
+		40% {
+			transform: scale(1.45);
+		}
+	}
+</style>
