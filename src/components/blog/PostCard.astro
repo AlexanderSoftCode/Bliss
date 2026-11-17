@@ -1,8 +1,8 @@
 ---
-import AgentSprite from './AgentSprite.astro';
+import AgentSprite from '../AgentSprite.astro';
 import DotNumber from './DotNumber.astro';
 import PostFrame from './PostFrame.astro';
-import { formatDate, getPost, transitionNames } from '../data/posts';
+import { formatDate, getPost, transitionNames } from '../../data/posts';
 
 interface Props {
 	slug: string;
@@ -59,8 +59,8 @@ const Root = queued ? 'div' : 'a';
 </Root>
 
 <script>
-	import '../lib/card-entrance';
-	import '../lib/morph-guard';
+	import '../../lib/card-entrance';
+	import '../../lib/morph-guard';
 
 	// Tilt toward the pointer. Pointer devices only, motion-safe.
 	const canTilt = matchMedia('(hover: hover) and (prefers-reduced-motion: no-preference)');

@@ -10,7 +10,7 @@ const { class: className } = Astro.props;
 </div>
 
 <script>
-  import { mountShape } from "../lib/shape/mount.ts";
+  import { mountShape } from "../../lib/shape/mount.ts";
 
   // mountShape checks for WebGPU itself and resolves null if it's missing.
   async function init() {

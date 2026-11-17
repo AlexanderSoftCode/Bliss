@@ -1,7 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import AgentSprite from '../../components/AgentSprite.astro';
-import PostCard from '../../components/PostCard.astro';
+import PostCard from '../../components/blog/PostCard.astro';
 import { posts } from '../../data/posts';
 
 const shipped = posts.filter((post) => post.status === 'published').length;

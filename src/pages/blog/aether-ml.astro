@@ -1,10 +1,10 @@
 ---
 import PostLayout from '../../layouts/PostLayout.astro';
-import DotStat from '../../components/DotStat.astro';
-import Ledger from '../../components/Ledger.astro';
-import PostSection from '../../components/PostSection.astro';
+import DotStat from '../../components/blog/DotStat.astro';
+import Ledger from '../../components/blog/Ledger.astro';
+import PostSection from '../../components/blog/PostSection.astro';
 import TerminalWindow from '../../components/TerminalWindow.astro';
-import MarkdownFile from '../../components/MarkdownFile.astro';
+import MarkdownFile from '../../components/blog/MarkdownFile.astro';
 import * as claudeMd from '../../data/aether-ml-claude.md';
 
 const runTests = `.claude/dx python3 -m unittest discover -q tests`;

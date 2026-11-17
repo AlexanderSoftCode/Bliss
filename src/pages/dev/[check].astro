@@ -2,7 +2,7 @@
 // Dev-only shader check: renders fixed frames offscreen, reads the pixels back, lists PASS/FAIL.
 // No paths in production builds, so this page never ships.
 import Layout from '../../layouts/Layout.astro';
-import IrregularShape from '../../components/IrregularShape.astro';
+import IrregularShape from '../../components/home/IrregularShape.astro';
 
 export function getStaticPaths() {
   return import.meta.env.DEV ? [{ params: { check: 'shape-check' } }] : [];
