@@ -2,10 +2,13 @@
 import OrbLogo from "../components/OrbLogo.astro";
 const links = [
 	{ href: '/', label: 'Home' },
+	{ href: '/blog', label: 'Blogs' },
 	{ href: '/about', label: 'About' },
 ];
 
 const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+// Nested routes count too, so /blog/aether-ml highlights Blogs.
+const isCurrent = (href: string) => path === href || (href !== '/' && path.startsWith(`${href}/`));
 ---
 <header class="border-border">
     <nav aria-label="Main" class="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
@@ -24,7 +27,7 @@ const path = Astro.url.pathname.replace(/\/$/, '') || '/';
                 <li>
                     <a
                         href={link.href}
-                        aria-current={path === link.href ? 'page' : undefined}
+                        aria-current={isCurrent(link.href) ? 'page' : undefined}
                         class="text-text-muted hover:text-accent-hover aria-[current=page]:text-text transition-colors duration-150"
                     >
                         {link.label}

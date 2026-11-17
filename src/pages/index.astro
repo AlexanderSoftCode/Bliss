@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import ContributionGraph from '../components/ContributionGraph.astro';
 import ArrowIcon from '../components/ArrowIcon.astro';
 import GithubIcon from '../components/GithubIcon.astro';
+import AgentSprite from '../components/AgentSprite.astro';
 import TechPill from '../components/TechPill.astro';
 import IrregularShape from '../components/IrregularShape.astro';
 import TerminalWindow from '../components/TerminalWindow.astro';
@@ -30,7 +31,7 @@ model.to("cupy")
 					Outside of software, I enjoy working out, building PCs, and ricing my Linux desktop
 					environment.
 				</p>
-				<div class="mt-6 flex items-center gap-3">
+				<div class="mt-6 flex flex-wrap items-center gap-3">
 					<a
 						href="https://github.com/AlexanderSoftCode"
 						class="inline-flex items-center gap-2 text-text-muted transition-colors hover:text-accent-hover"
@@ -40,10 +41,20 @@ model.to("cupy")
 					</a>
 					<span class="text-accent" aria-hidden="true">/</span>
 					<a
+						href="/blog"
+						class="group inline-flex items-center gap-2 text-text-muted transition-colors hover:text-accent-hover"
+					>
+						<AgentSprite />
+						<span class="sm:hidden">Agents</span>
+						<span class="hidden sm:inline">How I use agents</span>
+					</a>
+					<span class="text-accent" aria-hidden="true">/</span>
+					<a
 						href="/about"
 						class="group inline-flex items-center gap-2 text-text-muted transition-colors hover:text-accent-hover"
 					>
-						More about me
+						<span class="sm:hidden">About</span>
+						<span class="hidden sm:inline">More about me</span>
 						<ArrowIcon />
 					</a>
 				</div>
@@ -86,9 +97,9 @@ model.to("cupy")
 		<div class="mt-12 max-w-3xl">
 			<h2 class="text-2xl font-semibold text-text">What I work with</h2>
 			<p class="mt-4 text-lg leading-8 text-text-muted">
-				Most of what I write is <TechPill name="python" />. I've also worked
-				in <TechPill name="java" />, <TechPill name="typescript" />,
-				and <TechPill name="javascript" />, dropping into <TechPill name="cpp"/> for GPU kernel and
+				Most of what I write is <TechPill name="python" />, <TechPill name="typescript" />,
+				and <TechPill name="javascript" />. I've also dabbled
+				in <TechPill name="java" />, dropping into <TechPill name="cpp"/> for GPU kernel and
 				compiler work.
 			</p>
 			<p class="mt-4 text-lg leading-8 text-text-muted">
