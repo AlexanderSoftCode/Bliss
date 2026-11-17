@@ -1,0 +1,44 @@
+---
+import DotNumber from './DotNumber.astro';
+import PostFrame from './PostFrame.astro';
+import { formatDate, getPost, transitionNames } from '../data/posts';
+
+interface Props {
+	slug: string;
+}
+
+const { post, number } = getPost(Astro.props.slug);
+const names = transitionNames(post.slug);
+---
+
+<!-- Mirrors PostCard: shared view-transition names make the card morph into this header. -->
+<header class="relative rounded-xl bg-surface p-7">
+	<PostFrame slug={post.slug} />
+	<div class="mono flex items-center justify-between border-b border-border pb-3 text-xs text-text-muted">
+		<span>WRITING N°{number}</span>
+		{post.date && (
+			<span>
+				<time datetime={post.date.toISOString()}>{formatDate(post.date)}</time>
+				{post.minutes && ` · ${post.minutes} MIN`}
+			</span>
+		)}
+	</div>
+	<div class="mt-8 flex flex-wrap items-end justify-between gap-6">
+		<h1 class="text-3xl text-text sm:text-4xl">
+			{post.title}
+		</h1>
+		<div style={`view-transition-name: ${names.number}`}>
+			<DotNumber value={number} class="h-20 w-auto" />
+		</div>
+	</div>
+	<span class="mono mt-6 inline-block rounded-full border border-border px-2.5 py-1 text-xs text-text-muted">
+		{post.tag}
+	</span>
+</header>
+
+<style>
+	.mono {
+		font-family: var(--font-heading);
+		letter-spacing: 0.08em;
+	}
+</style>

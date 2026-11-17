@@ -1,0 +1,51 @@
+---
+import DotNumber from './DotNumber.astro';
+import { getNextPost } from '../data/posts';
+
+interface Props {
+	slug: string;
+}
+
+const { next } = getNextPost(Astro.props.slug);
+const queued = next?.post.status === 'queued';
+const Panel = queued ? 'div' : 'a';
+---
+
+<footer class="mt-16 flex flex-col gap-8 border-t border-border pt-8 sm:flex-row sm:items-start sm:justify-between">
+	<a href="/blog" class="text-text-muted transition-colors hover:text-accent-hover">← All write-ups</a>
+
+	{next && (
+		<Panel
+			href={queued ? undefined : `/blog/${next.post.slug}`}
+			class:list={['next w-full rounded-xl border border-border p-5 sm:max-w-xs', queued ? 'queued border-dashed' : 'bg-surface']}
+		>
+			<p class="mono flex items-center justify-between gap-3 text-xs text-text-muted">
+				<span>NEXT IN THE QUEUE</span>
+				{queued && <span>QUEUED</span>}
+			</p>
+			<div class="mt-4 flex items-center gap-4">
+				<DotNumber value={next.number} class="h-7 w-auto shrink-0" />
+				<p class="text-base leading-6 text-text">{next.post.title}</p>
+			</div>
+			<span class="mono mt-4 inline-block rounded-full border border-border px-2.5 py-1 text-xs text-text-muted">
+				{next.post.tag}
+			</span>
+		</Panel>
+	)}
+</footer>
+
+<style>
+	.mono {
+		font-family: var(--font-heading);
+		letter-spacing: 0.08em;
+	}
+	.next {
+		transition: border-color 300ms;
+	}
+	a.next:is(:hover, :focus-visible) {
+		border-color: var(--color-accent);
+	}
+	.queued :global(.dot-number .on) {
+		fill: var(--color-text-muted);
+	}
+</style>

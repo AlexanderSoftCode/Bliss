@@ -1,0 +1,27 @@
+---
+import { transitionNames } from '../data/posts';
+
+interface Props {
+	slug: string;
+}
+
+const { frame } = transitionNames(Astro.props.slug);
+---
+
+<!--
+	The border of a post card/header, as its own element. During the card -> post morph only this
+	outline travels (drawn crisply by the view-transition group, see global.css); the contents
+	crossfade in place instead of being stretched between two different aspect ratios.
+-->
+<div class="post-frame" style={`view-transition-name: ${frame}; view-transition-class: post-frame`} aria-hidden="true"></div>
+
+<style>
+	.post-frame {
+		position: absolute;
+		inset: 0;
+		border: 1px solid var(--color-border);
+		border-radius: inherit;
+		pointer-events: none;
+		transition: border-color 300ms;
+	}
+</style>

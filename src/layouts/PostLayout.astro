@@ -1,0 +1,37 @@
+---
+import Layout from './Layout.astro';
+import PostFooter from '../components/PostFooter.astro';
+import PostHeader from '../components/PostHeader.astro';
+import { getPost } from '../data/posts';
+
+interface Props {
+	slug: string;
+}
+
+const { post } = getPost(Astro.props.slug);
+---
+
+<Layout clientRouter title={`${post.title} — Alexander`} description={post.summary}>
+	<article class="mx-auto max-w-3xl px-6 py-16">
+		<PostHeader slug={post.slug} />
+		<div class="post-body mt-12 text-lg leading-8 text-text-muted">
+			<slot />
+		</div>
+		<PostFooter slug={post.slug} />
+	</article>
+</Layout>
+
+<script>
+	import '../lib/card-entrance';
+	import '../lib/morph-guard';
+</script>
+
+<style>
+	/* Paragraphs carry the rhythm; headings and panels set their own space above. */
+	.post-body > :global(p) {
+		margin-top: 1rem;
+	}
+	.post-body > :global(:first-child) {
+		margin-top: 0;
+	}
+</style>
